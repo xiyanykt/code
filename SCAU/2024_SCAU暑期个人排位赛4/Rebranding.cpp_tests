@@ -1,0 +1,16 @@
+[
+	{
+		"correct_answers":
+		[
+			"molice"
+		],
+		"test": "6 1\npolice\np m\n"
+	},
+	{
+		"correct_answers":
+		[
+			"cdcbcdcfcdc"
+		],
+		"test": "11 6\nabacabadaba\na b\nb c\na d\ne g\nf a\nb b\n"
+	}
+]

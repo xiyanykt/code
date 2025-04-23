@@ -1,0 +1,17 @@
+{
+    "name": "f.cpp",
+    "url": "w:\\v\\Nowcoder\\Winter3\\f.cpp",
+    "tests": [
+        {
+            "id": 1737868604013,
+            "input": "5\n6 3 4 5\n20 0 0 0\n18 6 6 6\n1 1 1 0\n20 20 20 20",
+            "output": "Yes\nNo\nYes\nYes\nNo"
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Nowcoder\\Winter3\\f.cpp",
+    "group": "local",
+    "local": true
+}

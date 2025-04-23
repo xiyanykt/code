@@ -1,0 +1,522 @@
+#include<bits/stdc++.h>
+
+using u32 = unsigned int;
+using i64 = long long;
+using u64 = unsigned long long;
+using f64 = long double;
+using i128 = __int128;
+using u128 = unsigned __int128;
+using f128 = __float128;
+
+#ifndef ONLINE_JUDGE
+#include "algo/debug.hpp"
+#else
+#define debug(...) (void)42
+#endif
+
+template<class T>
+constexpr bool chmax(T& x, T y) {
+    if (y > x) {
+        x = y;
+        return true;
+    }
+    return false;
+}
+
+template<class T>
+constexpr bool chmin(T& x, T y) {
+    if (y < x) {
+        x = y;
+        return true;
+    }
+    return false;
+}
+
+struct HLD {
+    int n;
+    std::vector<std::vector<int>>adj;
+    std::vector<int>dfn, siz, par, son, top, dep, seq;
+    int cur;
+
+    HLD() {}
+    HLD(int n) {
+        this->n = n;
+        adj.assign(n + 1, std::vector<int>());
+        dfn.resize(n + 1), par.resize(n + 1);
+        son.resize(n + 1), siz.resize(n + 1);
+        dep.resize(n + 1), top.resize(n + 1);
+        seq.resize(n + 1);
+        cur = 0;
+    }
+
+    void addEdge(int u, int v) {
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    void dfs(int u) {
+        siz[u] += 1;
+        dep[u] = dep[par[u]] + 1;
+        for (const auto & v : adj[u]) {
+            if (v == par[u]) {
+                continue;
+            }
+            par[v] = u;
+            dfs(v);
+            siz[u] += siz[v];
+            if (siz[v] > siz[son[u]]) {
+                son[u] = v;
+            }
+        }
+    }
+    void dfs(int u, int h) {
+        dfn[u] = ++cur;
+        seq[cur] = u;
+        top[u] = h;
+        if (son[u]) {
+            dfs(son[u], h);
+        }
+        for (const auto & v : adj[u]) {
+            if (v == son[u] or v == par[u]) {
+                continue;
+            }
+            dfs(v, v);
+        }
+    }
+
+    void work(int s = 1) {
+        dfs(s);
+        dfs(s, s);
+    }
+
+    int lca(int u, int v) {
+        while (top[u] != top[v]) {
+            if (dep[top[u]] < dep[top[v]]) {
+                std::swap(u, v);
+            }
+            u = par[top[u]];
+        }
+        return dep[u] < dep[v] ? u : v;
+    }
+
+    int lca(int u, int v, int root) {
+        return lca(u, v) ^ lca(u, root) ^ lca(v, root);
+    }
+
+    int dist(int u, int v) {
+        return (dep[u] + dep[v] - 2 * dep[lca(u, v)]);
+    }
+
+    int jump(int u, int k) {
+        if (dep[u] <= k) {
+            return -1;
+        }
+        int d = dep[u] - k;
+        while (dep[top[u]] > d) {
+            u = par[top[u]];
+        }
+        return seq[dfn[u] + d - dep[u]];
+    }
+
+    int left(int u) {
+        return dfn[u];
+    }
+
+    int right(int u) {
+        return dfn[u] + siz[u] - 1;
+    }
+
+    bool isAncestor(int u, int v) {
+        return dfn[u] <= dfn[v] and dfn[v] < dfn[u] + siz[u];
+    }
+};
+
+struct PresidentTree {
+    struct Info {
+        int lsh = 0, rsh = 0;
+        int cnt = 0;
+        i64 sum = 0;
+        friend Info operator+(const Info& a, const Info& b) {
+            return { -1, -1, a.cnt + b.cnt, a.sum + b.sum};
+        }
+    };
+
+    int tot;
+    std::vector<Info>t;
+    PresidentTree(int KN) {
+        tot = 0;
+        t.resize((KN << 5) + 1);
+    }
+
+    void add(int& now, int pre, int L, int R, int x, int v = 1) {
+        t[now = ++tot] = t[pre];
+        t[now].cnt += v;
+        t[now].sum += x;
+        if (L == R) {
+            return;
+        }
+        int mid = (L + R) >> 1;
+        if (x <= mid) {
+            add(t[now].lsh, t[pre].lsh, L, mid, x, v);
+        } else {
+            add(t[now].rsh, t[pre].rsh, mid + 1, R, x, v);
+        }
+    }
+
+    int getKthMin(int l, int r, int L, int R, int k) {
+        if (t[r].cnt - t[l].cnt < k) {
+            return -1;
+        }
+        if (L == R) {
+            return L;
+        }
+        int mid = (L + R) >> 1;
+        int all = t[t[r].lsh].cnt - t[t[l].lsh].cnt;
+        if (k <= all) {
+            return getKthMin(t[l].lsh, t[r].lsh, L, mid, k);
+        } else {
+            return getKthMin(t[l].rsh, t[r].rsh, mid + 1, R, k - all);
+        }
+    }
+
+    int getKthMax(int l, int r, int L, int R, int k) {
+        if (t[r].cnt - t[l].cnt < k) {
+            return -1;
+        }
+        if (L == R) {
+            return R;
+        }
+        int mid = (L + R) >> 1;
+        int all = t[t[r].rsh].cnt - t[t[l].rsh].cnt;
+        if (k <= all) {
+            return getKthMax(t[l].rsh, t[r].rsh, mid + 1, R, k);
+        } else {
+            return getKthMax(t[l].lsh, t[r].lsh, L, mid, k - all);
+        }
+    }
+
+    Info getRange(int l, int r, int L, int R, int x, int y) {
+        if (L > y or R < x) {
+            return Info();
+        }
+        if (x <= L and R <= y) {
+            return Info(-1, -1, t[r].cnt - t[l].cnt, t[r].sum - t[l].sum);
+        }
+        int mid = (L + R) >> 1;
+        return getRange(t[l].lsh, t[r].lsh, L, mid, x, y) + getRange(t[l].rsh, t[r].rsh, mid + 1, R, x, y);
+    }
+};
+
+template<class Info>
+struct SegmentTree {
+    int n;
+    std::vector<Info>info;
+
+    SegmentTree() {
+        
+    }
+
+    SegmentTree(const int & n) {
+        this->n = n;
+        info.assign(4 << std::__lg(n), Info());
+    }
+
+    SegmentTree(const std::vector<Info>& a) {
+        int n = a.size() - 1;
+        this->n = n;
+        info.assign(4 << std::__lg(n), Info());
+        auto work = [&](auto && self, int p, int l, int r) {
+            if (l == r) {
+                info[p] = Info(a[l]);
+                return;
+            }
+            int mid = (l + r) >> 1;
+            self(self, p << 1, l, mid), self(self, p << 1 | 1, mid + 1, r);
+            info[p] = info[p << 1] + info[p << 1 | 1];
+        };
+        work(work, 1, 1, n);
+    }
+
+    void modify(int p, int l, int r, int L, int R, const Info& v) {
+        if (l > R or r < L) {
+            return;
+        }
+        if (L <= l and r <= R) {
+            info[p] = v;
+            return;
+        }
+        int mid = (l + r) >> 1;
+        modify(p << 1, l, mid, L, R, v), modify(p << 1 | 1, mid + 1, r, L, R, v);
+        info[p] = info[p << 1] + info[p << 1 | 1];
+    }
+    void modify(int p, const Info& v) {
+        modify(1, 1, n, p, p, v);
+    }
+
+    Info rangeQuery(int p, int l, int r, int L, int R) {
+        if (l > R or r < L) {
+            return Info();
+        }
+        if (L <= l and r <= R) {
+            return info[p];
+        }
+        int mid = (l + r) >> 1;
+        return rangeQuery(p << 1, l, mid, L, R) + rangeQuery(p << 1 | 1, mid + 1, r, L, R);
+    }
+    Info rangeQuery(int l, int r) {
+        return rangeQuery(1, 1, n, l, r);
+    }
+
+    template<class F>
+    int findFirst(int p, int l, int r, int L, int R, F pred) {
+        if (l > R or r < L or not pred(info[p])) {
+            return -1;
+        }
+        if (l == r) {
+            return l;
+        }
+        int mid = (l + r) >> 1;
+        int res = findFirst(p << 1, l, mid, L, R, pred);
+        return res == -1 ? findFirst(p << 1 | 1, mid + 1, r, L, R, pred) : res;
+    }
+    template<class F>
+    int findFirst(int l, int r, F pred) {
+        return findFirst(1, 1, n, l, r, pred);
+    }
+
+    template<class F>
+    int findLast(int p, int l, int r, int L, int R, F pred) {
+        if (l > R or r < L or not pred(info[p])) {
+            return -1;
+        }
+        if (l == r) {
+            return r;
+        }
+        int mid = (l + r) >> 1;
+        int res = findLast(p << 1 | 1, mid + 1, r, L, R, pred);
+        return res == -1 ? findLast(p << 1, l, mid, L, R, pred) : res;
+    }
+    template<class F>
+    int findLast(int l, int r, F pred) {
+        return findLast(1, 1, n, l, r, pred);
+    }
+
+    template<class F>
+    int findPrefixFirst(int p, int l, int r, int L, int R, const F& pred, Info& pref) {
+        if (l > R or r < L) {
+            return r + 1;
+        }
+        if (L <= l and r <= R) {
+            if (not pred(pref + info[p])) {
+                pref = pref + info[p];
+                return r + 1;
+            }
+            if (l == r) {
+                return l;
+            }
+            int mid = (l + r) >> 1;
+            int res;
+            if (pred(pref + info[p << 1])) {
+                res = findPrefixFirst(p << 1, l, mid, L, R, pred, pref);
+            } else {
+                pref = pref + info[p << 1];
+                res = findPrefixFirst(p << 1 | 1, mid + 1, r, L, R, pred, pref);
+            }
+            return res;
+        }
+        int mid = (l + r) >> 1;
+        int res = mid + 1;
+        if (L <= mid) {
+            res = findPrefixFirst(p << 1, l, mid, L, R, pred, pref);
+        }
+        if (res == mid + 1 and mid + 1 <= R) {
+            res = findPrefixFirst(p << 1 | 1, mid + 1, r, L, R, pred, pref);
+        }
+        return res;
+    }
+    template<class F>
+    int findPrefixFirst(int l, int r, const F& pred) {
+        Info pref = Info();
+        int res = findPrefixFirst(1, 1, n, l, r, pred, pref);
+        return res == r + 1 ? -1 : res;
+    }
+
+    template<class F>
+    int findSurfixLast(int p, int l, int r, int L, int R, const F& pred, Info& surf) {
+        if (l > R or r < L) {
+            return l - 1;
+        }
+        if (L <= l and r <= R) {
+            if (not pred(surf + info[p])) {
+                surf = surf + info[p];
+                return l - 1;
+            }
+            if (l == r) {
+                return r;
+            }
+            int mid = (l + r) >> 1;
+            int res;
+            if (pred(surf + info[p << 1 | 1])) {
+                res = findSurfixLast(p << 1 | 1, mid + 1, r, L, R, pred, surf);
+            } else {
+                surf = surf + info[p << 1 | 1];
+                res = findSurfixLast(p << 1, l, mid, L, R, pred, surf);
+            }
+            return res;
+        }
+        int mid = (l + r) >> 1;
+        int res = mid;
+        if (mid + 1 <= R) {
+            res = findSurfixLast(p << 1 | 1, mid + 1, r, L, R, pred, surf);
+        }
+        if (L <= mid and res == mid) {
+            res = findSurfixLast(p << 1, l, mid, L, R, pred, surf);
+        }
+        return res;
+    }
+    template<class F>
+    int findSurfixLast(int l, int r, const F& pred) {
+        Info surf = Info();
+        int res = findSurfixLast(1, 1, n, l, r, pred, surf);
+        return res == l - 1 ? -1 : res;
+    }
+};
+
+struct Info {
+    int cnt = 0;
+    constexpr friend Info operator+(const Info& a, const Info& b) {
+        return {a.cnt + b.cnt};
+    }
+};
+
+template<typename T>
+struct Fenwick {
+	int n;
+	std::vector<T>a;
+
+	Fenwick() {
+
+	}
+	
+	Fenwick(int n) {
+		this->n = n;
+		a.assign(n + 1, T());
+	}
+
+	void add(int p, const T& x) {
+		if (p >= 1 && p <= n) {
+			for (int i = p; i <= n; i += i & -i) {
+				a[i] += x;
+			}
+		}
+	}
+
+	T sum(int p) {
+		T ans = T();
+		if (p >= 1 && p <= n) {
+			for (int i = p; i > 0; i -= i & -i) {
+				ans += a[i];
+			}
+		}
+		return ans;
+	}
+
+	T rangeQuery(int l, int r) {
+		return sum(r) - sum(l - 1);
+	}
+
+	int select(int k) {
+		int x = 0;
+		T cur = T();
+		for (int i = std::__lg(n); ~i; i -= 1) {
+			x += 1 << i;
+			if (x >= n or cur + a[x] >= k) {
+				x -= 1 << i;
+			} else {
+				cur = cur + a[x];
+			}
+		}
+		return x + 1;
+	}
+};
+
+template <class Info>
+struct SparseTable {
+	std::vector<std::vector<Info>>jump;
+
+	SparseTable() = default;
+	constexpr SparseTable(const auto& a) {
+		int n = a.size() - 1;
+		int logn = std::__lg(n);
+		jump.assign(logn + 1, std::vector<Info>(n + 1, Info()));
+		for (int i = 0; i <= n; i += 1) {
+			jump[0][i] = Info(a[i]);
+		}
+		for (int j = 1; j <= logn; j += 1) {
+			for (int i = 1; i + (1 << (j - 1)) - 1 <= n; i += 1) {
+				jump[j][i] = jump[j - 1][i] + jump[j - 1][i + (1 << (j - 1))]; 
+			}
+		}
+	}
+
+	constexpr Info range(int l, int r) const {
+		if (l > r || l < 1 || r > jump[0].size() - 1) {
+			return Info();
+		}
+		int k = r - l + 1;
+		k = std::__lg(k);
+		return jump[k][l] + jump[k][r - (1 << k) + 1];
+	}
+};
+
+struct Max {
+    int val = 0;
+    constexpr friend Max operator+(const Max& a, const Max& b) {
+        return {std::max(a.val, b.val)};
+    }
+};
+
+auto main() ->int {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+    auto solve = [&]() {
+        int n;
+        std::cin >> n;
+
+        std::vector<int>w(n + 1);
+        for (int i = 1; i <= n; i += 1) {
+            std::cin >> w[i];
+        }
+
+        HLD hld(n);
+        for (int i = 1; i <= n - 1; i += 1) {
+            int u, v;
+            std::cin >> u >> v;
+            hld.addEdge(u, v);
+        }
+        hld.work();
+        
+        std::vector<int>a(n + 1);
+        for (int i = 1; i <= n; i += 1) {
+            a[i] = w[hld.seq[i]];
+        }
+        auto f = SparseTable<Max>(a);
+
+        int r = 0;
+        for (int u = 1; u <= n; u += 1) {
+            if (w[u] < std::max(f.range(1, hld.left(u) - 1).val, f.range(hld.right(u) + 1, n).val) && w[u] > w[r]) {
+                r = u;
+            }
+        }
+
+        std::cout << r << '\n';
+    };
+
+    int t;
+    std::cin >> t;
+    while (t--) {
+        solve();
+    }
+    return 0;
+}

@@ -1,0 +1,9 @@
+[
+	{
+		"correct_answers":
+		[
+			"shuishui"
+		],
+		"test": "1\n3\n1 1 2\n3 3 2\n"
+	}
+]

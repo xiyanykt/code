@@ -1,0 +1,104 @@
+\documentclass{article}
+\usepackage{lipsum}
+\usepackage{ctex}
+\usepackage{geometry}
+\thispagestyle{empty} % 当前页不显示页码
+\geometry{a4paper,scale=0.7}
+\begin{document}
+\newpage
+\section*{\textsf{问题B. }\textrm{DDE}}
+\begin{tabular}{ll}
+	\fontsize{10pt}{10pt}\texttt{输入文件:} & \fontsize{10pt}{10pt}\texttt{标准输入}          \\
+	\fontsize{10pt}{10pt}\texttt{输出文件:} & \fontsize{10pt}{10pt}\texttt{标准输出}          \\
+	\fontsize{10pt}{10pt}\texttt{时间限制:} & \fontsize{10pt}{10pt}\texttt{2000 ms}       \\
+	\fontsize{10pt}{10pt}\texttt{内存限制:} & \fontsize{10pt}{10pt}\texttt{256 megabytes} \\
+\end{tabular}
+\subsection*{\textsf{问题描述}}
+判断是否可以通过执行一定次数（可能为零次）操作，使数组中的所有元素相同。经过这些操作后，数组中的所有元素将相等。
+
+给定一个由$n$个正整数组成的数组$a$。你可以对它执行以下操作：
+
+1. 选择一对元素$a_i$和$a_j$（$1 \le i, j \le n$且$i \neq j$）；
+
+2. 选择整数$a_i$的一个除数，即一个整数$x$，使得$a_i \bmod x = 0$；
+
+3. 将$a_i$替换为$\frac{a_i}{x}$，并将$a_j$替换为$a_j \cdot x$。
+
+判断是否可以通过执行一定次数（可能为零次）操作，使数组中的所有元素相同。
+
+例如，考虑数组$a = [100, 2, 50, 10, 1]$，包含$5$个元素。对它执行两次操作：
+
+1. 选择$a_3 = 50$和$a_2 = 2$，$x = 5$。将$a_3$替换为$\frac{a_3}{x} = \frac{50}{5} = 10$，并将$a_2$替换为$a_2 \cdot x = 2 \cdot 5 = 10$。结果数组为$a = [100, 10, 10, 10, 1]$；
+
+2. 选择$a_1 = 100$和$a_5 = 1$，$x = 10$。将$a_1$替换为$\frac{a_1}{x} = \frac{100}{10} = 10$，并将$a_5$替换为$a_5 \cdot x = 1 \cdot 10 = 10$。结果数组为$a = [10, 10, 10, 10, 10]$。
+
+执行这些操作后，数组$a$中的所有元素都变成了$10$。
+\subsection*{\textsf{输入}}
+输入的第一行包含一个整数$t$（$1 \le t \le 2000$）——测试用例的数量。
+
+接下来是每个测试用例的描述。
+
+每个测试用例的第一行包含一个整数$n$（$1 \le n \le 10^4$）——数组$a$中的元素数量。
+
+每个测试用例的第二行包含恰好$n$个整数$a_i$（$1 \le a_i \le 10^6$）——数组$a$的元素。
+
+保证所有测试用例中$n$的总和不超过$10^4$。
+\subsection*{\textsf{输出}}
+对于每个测试用例，输出一行：
+
+如果可以通过执行一定次数（可能为零次）操作使数组中的所有元素相等，则输出"YES"；
+否则，输出"NO"。
+
+\noindent
+\subsection*{\textsf{样例}}
+\noindent
+\begin{tabular}{| p{7cm} | p{7cm} |}
+	\hline
+	{\quad\quad\quad\quad\quad\quad\quad\  标准输入} & {\quad\quad\quad\quad\quad\quad\quad\  标准输出} \\
+	\hline
+	7
+
+	5
+
+	100 2 50 10 1
+
+	3
+
+	1 1 1
+
+	4
+
+	8 2 4 2
+
+	4
+
+	30 50 27 20
+
+	2
+
+	75 40
+
+	2
+
+	4 4
+
+	3
+
+	2 3 1                                        & YES
+
+    YES
+	
+    NO
+	
+    YES
+	
+    NO
+	
+    YES
+	
+    NO                                                                                          \\
+	\hline
+\end{tabular}
+
+\end{document}
+% pdflatex statement.tex

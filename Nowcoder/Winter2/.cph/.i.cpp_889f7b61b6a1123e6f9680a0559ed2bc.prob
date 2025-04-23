@@ -1,0 +1,22 @@
+{
+    "name": "i.cpp",
+    "url": "w:\\v\\Nowcoder\\Winter2\\i.cpp",
+    "tests": [
+        {
+            "id": 1737821197034,
+            "input": "3\n5 2 1\n1 2\n1 3",
+            "output": "50"
+        },
+        {
+            "id": 1737821279014,
+            "input": "4\n5 6 3 1\n1 2\n1 3\n2 4",
+            "output": "142"
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Nowcoder\\Winter2\\i.cpp",
+    "group": "local",
+    "local": true
+}

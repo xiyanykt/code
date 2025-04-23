@@ -1,0 +1,65 @@
+[
+	{
+		"correct_answers":
+		[
+			"0 1 2 3 4 4 3 7 3 9 10 4\n2 0 2 2\nIMPOSSIBLE"
+		],
+		"test": "3\n12 5\n1 5\n9 11\n7 8\n6 6\n12 12\n4 3\n1 1\n4 4\n2 3\n2 2\n1 1\n2 2\n"
+	},
+	{
+		"correct_answers":
+		[
+			"0"
+		],
+		"test": "1\n1 1\n1 1\n"
+	},
+	{
+		"correct_answers":
+		[
+			"0 1 1"
+		],
+		"test": "1\n3 2\n1 2\n3 3\n"
+	},
+	{
+		"correct_answers":
+		[
+			"IMPOSSIBLE"
+		],
+		"test": "1\n10 2\n1 5\n6 10\n"
+	},
+	{
+		"correct_answers":
+		[
+			"5 1 2 6 0 5 6"
+		],
+		"test": "1\n7 3\n1 3\n4 4\n5 7\n"
+	},
+	{
+		"correct_answers":
+		[
+			"0 1 2 3 4 4 4 3 8 9 10"
+		],
+		"test": "1\n11 4\n1 5\n6 6\n7 7\n8 11\n"
+	},
+	{
+		"correct_answers":
+		[
+			"0 1 1 1 1"
+		],
+		"test": "1\n5 4\n1 2\n3 3\n4 4\n5 5\n"
+	},
+	{
+		"correct_answers":
+		[
+			"0 1 2 3 4 5 6 7 8 9"
+		],
+		"test": "1\n10 1\n1 10\n"
+	},
+	{
+		"correct_answers":
+		[
+			"0 1 2 3 1 5 6"
+		],
+		"test": "1\n7 2\n1 4\n5 7\n"
+	}
+]

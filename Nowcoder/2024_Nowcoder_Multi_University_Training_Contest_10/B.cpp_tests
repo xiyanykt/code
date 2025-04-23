@@ -1,0 +1,16 @@
+[
+	{
+		"correct_answers":
+		[
+			"int\npair<int,int>\nint"
+		],
+		"test": "3 3\nint a;\npair<int,int> E6;\npair<pair<double,int>,double> __Fukami;\na\nE6\n__Fukami.first.second\n"
+	},
+	{
+		"correct_answers":
+		[
+			"jxj"
+		],
+		"test": "1 1\npair<int,pair<pair<int,pair<jxj,jkj>>,double>> gche;\ngche.second.first.second.first\n"
+	}
+]

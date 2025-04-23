@@ -1,0 +1,126 @@
+[
+	{
+		"correct_answers":
+		[
+			"Yes",
+			"YES"
+		],
+		"test": "4 1 2\n1 2 5 10\n"
+	},
+	{
+		"correct_answers":
+		[
+			"No",
+			"NO"
+		],
+		"test": "5 1 2\n1 1 1 1 5\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Yes",
+			"YES"
+		],
+		"test": "5 1 3\n1 1 1 1 5\n"
+	},
+	{
+		"correct_answers":
+		[
+			"No",
+			"NO"
+		],
+		"test": "5 2 3\n1 1 1 1 5\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Yes",
+			"YES"
+		],
+		"test": "9 1 9\n1 1 1 1 1 1 1 1 1\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Yes"
+		],
+		"test": "10 2 3\n1 1 1 1 1 1 1 50 50 100\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Yes"
+		],
+		"test": "10 2 3\n1 1 1 1 1 1 1 100 100 100\n"
+	},
+	{
+		"correct_answers":
+		[
+			"No"
+		],
+		"test": "10 2 3\n1 1 1 1 1 1 1 6 6 6\n"
+	},
+	{
+		"correct_answers":
+		[
+			"No"
+		],
+		"test": "10 2 3\n1 1 1 1 1 1 1 7 7 7\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Yes"
+		],
+		"test": "4 1 2\n1 1 3 3\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Yes"
+		],
+		"test": "3 1 2\n1 1 3\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Yes"
+		],
+		"test": "4 1 2\n1 1 1 5\n"
+	},
+	{
+		"correct_answers":
+		[
+			"No"
+		],
+		"test": "7 2 3\n1 1 1 1 6 6 6\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Yes"
+		],
+		"test": "7 2 3\n1 1 1 1 6 7 7\n"
+	},
+	{
+		"correct_answers":
+		[
+			"No"
+		],
+		"test": "7 2 3\n1 1 1 1 6 6 7\n"
+	},
+	{
+		"correct_answers":
+		[
+			"No"
+		],
+		"test": "4 1 2\n1 1 1 3\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Yes"
+		],
+		"test": "4 2 3\n1 3 3 3\n"
+	}
+]

@@ -1,0 +1,30 @@
+[
+	{
+		"correct_answers":
+		[
+			"Bicarp"
+		],
+		"test": "4\n0523\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Bicarp"
+		],
+		"test": "2\n??\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Bicarp"
+		],
+		"test": "8\n?054??0?\n"
+	},
+	{
+		"correct_answers":
+		[
+			"Monocarp"
+		],
+		"test": "6\n???00?\n"
+	}
+]

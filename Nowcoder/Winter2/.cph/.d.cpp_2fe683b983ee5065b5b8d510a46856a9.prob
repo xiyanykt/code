@@ -1,0 +1,42 @@
+{
+    "name": "d.cpp",
+    "url": "w:\\v\\Nowcoder\\Winter2\\d.cpp",
+    "tests": [
+        {
+            "id": 1737616554030,
+            "input": "4\nabcc",
+            "output": "3"
+        },
+        {
+            "id": 1737616563211,
+            "input": "3\nabc",
+            "output": "0"
+        },
+        {
+            "id": 1737616577512,
+            "input": "6\nabcabc",
+            "output": "3"
+        },
+        {
+            "id": 1737617248461,
+            "input": "9\nabcdeeeee",
+            "output": "8"
+        },
+        {
+            "id": 1737619738829,
+            "input": "5\naaaab",
+            "output": ""
+        },
+        {
+            "id": 1737622798928,
+            "input": "6\naaaabc",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Nowcoder\\Winter2\\d.cpp",
+    "group": "local",
+    "local": true
+}

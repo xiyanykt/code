@@ -1,0 +1,27 @@
+{
+    "name": "m.cpp",
+    "url": "w:\\v\\Nowcoder\\Winter3\\m.cpp",
+    "tests": [
+        {
+            "id": 1737868320370,
+            "input": "nowcoder",
+            "output": ""
+        },
+        {
+            "id": 1737868327463,
+            "input": "ernoodwc",
+            "output": ""
+        },
+        {
+            "id": 1737868331875,
+            "input": "abcdefgh",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Nowcoder\\Winter3\\m.cpp",
+    "group": "local",
+    "local": true
+}

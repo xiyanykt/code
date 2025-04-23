@@ -1,0 +1,9 @@
+[
+	{
+		"correct_answers":
+		[
+			"aa\n-1\nww\ncod\nban"
+		],
+		"test": "5\ndcabaac\na\nyouknowwho\ncodeforces\nbangladesh\n"
+	}
+]

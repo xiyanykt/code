@@ -1,0 +1,17 @@
+{
+    "name": "1004.cpp",
+    "url": "w:\\v\\HDU\\2025 Spring 5\\1004.cpp",
+    "tests": [
+        {
+            "id": 1743854014167,
+            "input": "3\n5 3\n10 4\n19198 10",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\HDU\\2025 Spring 5\\1004.cpp",
+    "group": "local",
+    "local": true
+}

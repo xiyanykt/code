@@ -1,0 +1,17 @@
+{
+    "name": "g.py",
+    "url": "w:\\v\\Nowcoder\\Winter2\\g.py",
+    "tests": [
+        {
+            "id": 1737610705024,
+            "input": "3\n7 6\n6 2\n9 9",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Nowcoder\\Winter2\\g.py",
+    "group": "local",
+    "local": true
+}

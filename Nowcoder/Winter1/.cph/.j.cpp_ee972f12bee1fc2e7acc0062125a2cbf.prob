@@ -1,0 +1,22 @@
+{
+    "name": "j.cpp",
+    "url": "w:\\v\\Nowcoder\\Winter1\\j.cpp",
+    "tests": [
+        {
+            "id": 1737438843815,
+            "input": "5\n2 6 2 3 4",
+            "output": "3"
+        },
+        {
+            "id": 1737439015015,
+            "input": "10\n20 16 10 13 7 5 17 20 3 11 \n",
+            "output": "4"
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Nowcoder\\Winter1\\j.cpp",
+    "group": "local",
+    "local": true
+}

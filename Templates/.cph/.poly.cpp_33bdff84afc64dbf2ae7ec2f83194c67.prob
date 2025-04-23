@@ -1,0 +1,17 @@
+{
+    "name": "poly.cpp",
+    "url": "w:\\v\\Templates\\poly.cpp",
+    "tests": [
+        {
+            "id": 1739027961198,
+            "input": "",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Templates\\poly.cpp",
+    "group": "local",
+    "local": true
+}

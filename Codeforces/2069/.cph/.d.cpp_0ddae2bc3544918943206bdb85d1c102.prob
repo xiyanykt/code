@@ -1,0 +1,17 @@
+{
+    "name": "d.cpp",
+    "url": "w:\\v\\Codeforces\\2069\\d.cpp",
+    "tests": [
+        {
+            "id": 1739897435999,
+            "input": "4\nbaba\ncc\nddaa\nacbacddacbca\n",
+            "output": "2\n0\n3\n2\n"
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Codeforces\\2069\\d.cpp",
+    "group": "local",
+    "local": true
+}

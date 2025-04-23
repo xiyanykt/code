@@ -1,0 +1,17 @@
+{
+    "name": "f.cpp",
+    "url": "w:\\v\\Lib\\f.cpp",
+    "tests": [
+        {
+            "id": 1744535989190,
+            "input": "2\n2 2\nab\nab\n3 1\naaa\na",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Lib\\f.cpp",
+    "group": "local",
+    "local": true
+}

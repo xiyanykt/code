@@ -1,0 +1,27 @@
+[
+	{
+		"correct_answers":
+		[
+			"12"
+		],
+		"test": "2\n10 99\n"
+	},
+	{
+		"correct_answers":
+		[
+			"704"
+		],
+		"test": "6\n100000 999999\n"
+	},
+	{
+		"correct_answers":
+		[
+			"260"
+		],
+		"test": "6\n196760 498831\n",
+		"uncorrect_answers":
+		[
+			"288"
+		]
+	}
+]

@@ -1,0 +1,18 @@
+[
+	{
+		"correct_answers":
+		[
+			"(ca) = ([1, -5, 0])\n(cb) = ([0, -3, 1])\nNO\nYES\nNO\nNO\nYES\nNO",
+			"NO\nYES\nNO\nNO\nYES\nNO"
+		],
+		"test": "3 3 6\n-2 3 -3\n-2 2 -1\n-1\n1\n-2\n2\n-3\n3\n"
+	},
+	{
+		"correct_answers":
+		[
+			"(ca) = ([2, -1, 4, 1])\n(cb) = ([3, -5, 2, 0])\nYES\nYES\nYES\nYES\nNO\nYES",
+			"YES\nYES\nYES\nYES\nNO\nYES"
+		],
+		"test": "5 5 6\n1 -2 3 0 0\n0 -2 5 0 -3\n4\n-3\n5\n2\n-1\n2\n"
+	}
+]

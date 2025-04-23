@@ -1,0 +1,22 @@
+{
+    "name": "e.cpp",
+    "url": "w:\\v\\Codeforces\\2072\\e.cpp",
+    "tests": [
+        {
+            "id": 1740496276479,
+            "input": "3\n0\n2\n5\n",
+            "output": ""
+        },
+        {
+            "id": 1740501587705,
+            "input": "1\n1\n",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Codeforces\\2072\\e.cpp",
+    "group": "local",
+    "local": true
+}

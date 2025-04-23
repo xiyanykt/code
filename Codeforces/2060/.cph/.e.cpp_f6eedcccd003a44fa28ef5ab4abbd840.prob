@@ -1,0 +1,17 @@
+{
+    "name": "e.cpp",
+    "url": "w:\\v\\Codeforces\\2060\\e.cpp",
+    "tests": [
+        {
+            "id": 1737298765129,
+            "input": "5\n3 2 1\n1 2\n2 3\n1 3\n2 1 1\n1 2\n1 2\n3 2 0\n3 2\n1 2\n1 0 0\n3 3 1\n1 2\n1 3\n2 3\n1 2\n",
+            "output": "3\n0\n2\n0\n2\n"
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Codeforces\\2060\\e.cpp",
+    "group": "local",
+    "local": true
+}

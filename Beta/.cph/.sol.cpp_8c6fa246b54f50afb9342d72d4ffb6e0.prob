@@ -1,0 +1,17 @@
+{
+    "name": "sol.cpp",
+    "url": "w:\\v\\Beta\\sol.cpp",
+    "tests": [
+        {
+            "id": 1741968802268,
+            "input": "1\n965292017 122308052\n",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Beta\\sol.cpp",
+    "group": "local",
+    "local": true
+}

@@ -1,0 +1,13 @@
+# ninja log v6
+2	156	7663951725726608	CMakeFiles/Ub.dir/main.cpp.obj.ddi	d4e8e97e9939b843
+164	188	7663951727558759	CMakeFiles/Ub.dir/CXX.dd	346f47580210aae8
+164	188	7663951727558759	W:/v/Ub/cmake-build-debug/CMakeFiles/Ub.dir/CXXModules.json	346f47580210aae8
+164	188	7663951727558759	CMakeFiles/Ub.dir/main.cpp.obj.modmap	346f47580210aae8
+188	906	7663951727588774	CMakeFiles/Ub.dir/main.cpp.obj	7e0cd53b7888a1d3
+908	1068	7663951734785451	Ub.exe	1b6802779c8e59ec
+3	500	7663951933054841	CMakeFiles/Ub.dir/main.cpp.obj.ddi	d4e8e97e9939b843
+500	533	7663951938020020	CMakeFiles/Ub.dir/CXX.dd	346f47580210aae8
+500	533	7663951938020020	W:/v/Ub/cmake-build-debug/CMakeFiles/Ub.dir/CXXModules.json	346f47580210aae8
+500	533	7663951938020020	CMakeFiles/Ub.dir/main.cpp.obj.modmap	346f47580210aae8
+533	2461	7663951938351091	CMakeFiles/Ub.dir/main.cpp.obj	7e0cd53b7888a1d3
+2462	2587	7663951957636714	Ub.exe	1b6802779c8e59ec

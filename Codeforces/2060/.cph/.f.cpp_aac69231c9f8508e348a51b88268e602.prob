@@ -1,0 +1,17 @@
+{
+    "name": "f.cpp",
+    "url": "w:\\v\\Codeforces\\2060\\f.cpp",
+    "tests": [
+        {
+            "id": 1737303435978,
+            "input": "3\n2 2\n4 3\n10 6969420\n",
+            "output": "2 3\n3 6 6 10\n6969420 124188773 124188773 729965558 124188773 337497990 124188773 50981194 729965558 337497990\n"
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Codeforces\\2060\\f.cpp",
+    "group": "local",
+    "local": true
+}

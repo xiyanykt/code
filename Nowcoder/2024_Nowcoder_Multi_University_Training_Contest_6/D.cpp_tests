@@ -1,0 +1,17 @@
+[
+	{
+		"correct_answers":
+		[
+			"YES\n4\n1 2\n1 3\n1 4\n2 3",
+			"YES\n4\n1 2\n1 3\n2 3\n1 4"
+		],
+		"test": "4 5\n1 2 Lun\n1 3 Lun\n1 4 Qie\n2 3 Lun\n3 4 Qie\n"
+	},
+	{
+		"correct_answers":
+		[
+			"NO"
+		],
+		"test": "4 5\n1 2 Lun\n1 3 Qie\n1 4 Qie\n2 3 Lun\n3 4 Qie\n"
+	}
+]

@@ -1,0 +1,17 @@
+{
+    "name": "k.py",
+    "url": "w:\\v\\Nowcoder\\Winter6\\k.py",
+    "tests": [
+        {
+            "id": 1739250710903,
+            "input": "4\n2 11\n19 11\n2 1\n3 1",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Nowcoder\\Winter6\\k.py",
+    "group": "local",
+    "local": true
+}

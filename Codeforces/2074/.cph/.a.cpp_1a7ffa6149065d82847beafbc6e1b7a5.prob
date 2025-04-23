@@ -1,0 +1,17 @@
+{
+    "name": "a.cpp",
+    "url": "w:\\v\\Codeforces\\2074\\a.cpp",
+    "tests": [
+        {
+            "id": 1741703803611,
+            "input": "2\n2 2 2 2\n1 2 3 4\n",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Codeforces\\2074\\a.cpp",
+    "group": "local",
+    "local": true
+}

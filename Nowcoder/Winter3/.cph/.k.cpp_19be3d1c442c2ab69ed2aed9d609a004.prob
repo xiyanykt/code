@@ -1,0 +1,22 @@
+{
+    "name": "k.cpp",
+    "url": "w:\\v\\Nowcoder\\Winter3\\k.cpp",
+    "tests": [
+        {
+            "id": 1738251966563,
+            "input": "2 21\n5 2 5 3 4 1\n4 7 9 8 6",
+            "output": ""
+        },
+        {
+            "id": 1738251976354,
+            "input": "2 1000000\n5 100000002 100000005 100000003 100000004 100000001\n4 100000007 100000009 100000008 100000006",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Nowcoder\\Winter3\\k.cpp",
+    "group": "local",
+    "local": true
+}

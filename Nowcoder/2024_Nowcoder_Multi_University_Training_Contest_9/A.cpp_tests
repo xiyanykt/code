@@ -1,0 +1,44 @@
+[
+	{
+		"correct_answers":
+		[
+			"xx\nxx\nxx"
+		],
+		"test": "8 7\n.......\n..xxxx.\n..xxxx.\n..xxxx.\n..xxxx.\n..xxxx.\n..xxxx.\n.......\n"
+	},
+	{
+		"correct_answers":
+		[
+			"xxx"
+		],
+		"test": "5 6\n......\n......\n.xxx..\n......\n......\n"
+	},
+	{
+		"correct_answers":
+		[
+			"x"
+		],
+		"test": "5 6\n......\n......\n...x..\n......\n......\n"
+	},
+	{
+		"correct_answers":
+		[
+			"x\nx\nx\nx\nx"
+		],
+		"test": "5 5\nx....\nx....\nx....\nx....\nx....\n"
+	},
+	{
+		"correct_answers":
+		[
+			"xxxxxx\nxxxxxx\nxxxxxx\nxxxxxx\nxxxxxx"
+		],
+		"test": "5 6\nxxxxxx\nxxxxxx\nxxxxxx\nxxxxxx\nxxxxxx\n"
+	},
+	{
+		"correct_answers":
+		[
+			"x"
+		],
+		"test": "6 6\nxxxxxx\nxxxxxx\nxxxxxx\nxxxxxx\nxxxxxx\nxxxxxx\n"
+	}
+]

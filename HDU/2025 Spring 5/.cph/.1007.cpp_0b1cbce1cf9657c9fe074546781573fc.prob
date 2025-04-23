@@ -1,0 +1,17 @@
+{
+    "name": "1007.cpp",
+    "url": "w:\\v\\HDU\\2025 Spring 5\\1007.cpp",
+    "tests": [
+        {
+            "id": 1743765028801,
+            "input": "1\n12\ncommit\nbranch bugfix\ncommit\ncheckout bugfix\ncommit\nmerge main\nmerge main\ncheckout main\nmerge bugfix\ncommit\nreset 2\ncommit",
+            "output": ""
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\HDU\\2025 Spring 5\\1007.cpp",
+    "group": "local",
+    "local": true
+}

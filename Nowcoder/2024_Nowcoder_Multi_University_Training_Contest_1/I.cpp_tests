@@ -1,0 +1,9 @@
+[
+	{
+		"correct_answers":
+		[
+			"4\n2"
+		],
+		"test": "2 3\n/\\-\n\\/|\n2\n1 2 below\n2 2 right\n"
+	}
+]

@@ -1,0 +1,37 @@
+{
+    "name": "k.cpp",
+    "url": "w:\\v\\Nowcoder\\Winter2\\k.cpp",
+    "tests": [
+        {
+            "id": 1737615420473,
+            "input": "6 6\n000000\n000000\n001100\n001100\n000000\n000000",
+            "output": "8"
+        },
+        {
+            "id": 1737615433890,
+            "input": "2 3\n110\n000",
+            "output": "3"
+        },
+        {
+            "id": 1737615438365,
+            "input": "2 2\n11\n11",
+            "output": "0"
+        },
+        {
+            "id": 1737615442584,
+            "input": "4 5\n10000\n00111\n11000\n00000",
+            "output": "2"
+        },
+        {
+            "id": 1737615478024,
+            "input": "3 3\n111\n101\n111",
+            "output": "1"
+        }
+    ],
+    "interactive": false,
+    "memoryLimit": 1024,
+    "timeLimit": 3000,
+    "srcPath": "w:\\v\\Nowcoder\\Winter2\\k.cpp",
+    "group": "local",
+    "local": true
+}
