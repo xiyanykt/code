@@ -82,3 +82,108 @@ struct Basis {
         return res;
     }
 };
+
+constexpr int inf = 1E9;
+template<class T, int M>
+struct Linearbasis {
+    bool has_zero = false;
+    int dimension{0};
+    std::array<T, M>basis {};
+    std::array<int, M>time {};
+
+    Linearbasis() {
+        basis.fill(0);
+        time.fill(-1);
+    }
+
+    bool insert(T val, int t = inf) noexcept {
+        while (val) {
+            int log = std::__lg(val);
+            if (!basis[log]) {
+                basis[log] = val;
+                time[log] = t;
+                ++dimension;
+                return true;
+            }
+            if (time[log] < t) {
+                std::swap(time[log], t);
+                std::swap(basis[log], val);
+            }
+            val ^= basis[log];
+        }
+        has_zero = true;
+        return false;
+    }
+
+    T max(T x = {0}, int t = 0) const noexcept {
+        for (int k = M - 1; k >= 0; k -= 1) {
+            if (basis[k] && time[k] >= t) {
+                x = std::max(x, x ^ basis[k]);
+            }
+        }
+        return x;
+    }
+
+    T min(T y = std::numeric_limits<T>::max(), int t = 0) const noexcept{
+        for (int k = M - 1; k >= 0; k -= 1) {
+            if (basis[k] && time[k] >= t) {
+                y = std::min(y, y ^ basis[k]);
+            }
+        }
+        return y;
+    }
+
+    bool contains(T val, int t = 0) const noexcept {
+        for (int k = M - 1; k >= 0; k -= 1) {
+            if ((val >> k & 1) && time[k] >= t) {
+                val ^= basis[k];
+            }
+        }
+        return val == 0;
+    }
+
+    T select(T k, int t = 0) const noexcept {
+        u64 total = (1ULL << dimension) + (has_zero ? 1 : 0);
+        if (k >= total) {
+            return T{-1};
+        }
+        if (has_zero) {
+            if (k == 0) {
+                return T{};
+            }
+            k -= 1;
+        }
+
+        std::vector<T>r;
+        for (int k = 0; k < M; k += 1) {
+            if (!basis[k]) {
+                continue;
+            }
+            T v = basis[k];
+            for (int i = 0; i < k; i += 1) {
+                if ((v >> i & 1)) {
+                    v ^= basis[i];
+                }
+            }
+            r.push_back(v);
+        }
+
+        T res = 0;
+        for (int i = 0; i < int(r.size()); i += 1) {
+            if (k >> i & 1) {
+                res ^= r[i];
+            }
+        }
+        return res;
+    }
+
+    void merge(const Linearbasis<T, M>& other, int t = 0) {
+        for (int k = M - 1; k >= 0; k -= 1) {
+            if (other.time[k] >= t) {
+                insert(other.basis[k]);
+            }
+        }
+    }
+};
+
+using basis = Linearbasis<int, 30>;

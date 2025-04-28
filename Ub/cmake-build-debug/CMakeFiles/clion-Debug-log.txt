@@ -1,4 +1,4 @@
-"W:\JetBrains\CLion 2024.3.5\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=W:/JetBrains/CLion 2024.3.5/bin/ninja/win/x64/ninja.exe" -G Ninja -S W:\v\Ub -B W:\v\Ub\cmake-build-debug
+"W:\JetBrains\CLion 2024.3.5\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -G "MinGW Makefiles" -S W:\v\Ub -B W:\v\Ub\cmake-build-debug
 -- The C compiler identification is GNU 14.2.0
 -- The CXX compiler identification is GNU 14.2.0
 -- Detecting C compiler ABI info
@@ -11,6 +11,6 @@
 -- Check for working CXX compiler: C:/Program Files (x86)/msys2/mingw64/bin/c++.exe - skipped
 -- Detecting CXX compile features
 -- Detecting CXX compile features - done
--- Configuring done (4.8s)
+-- Configuring done (1.8s)
 -- Generating done (0.0s)
 -- Build files have been written to: W:/v/Ub/cmake-build-debug

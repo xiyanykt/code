@@ -3,8 +3,8 @@ struct MinCostFlow {
     struct edge {
         int to;
         T cap;
-        T flow;
-        edge(int to, T cap, T flow): to{to}, cap{cap}, flow{flow} {}
+        T cost;
+        edge(int to, T cap, T cost): to{to}, cap{cap}, cost{cost} {}
     };
 
     int n;

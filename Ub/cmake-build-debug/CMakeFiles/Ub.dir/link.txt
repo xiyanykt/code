@@ -1,0 +1,3 @@
+"W:\JetBrains\CLion 2024.3.5\bin\cmake\win\x64\bin\cmake.exe" -E rm -f CMakeFiles\Ub.dir/objects.a
+C:\PROGRA~2\msys2\mingw64\bin\ar.exe qc CMakeFiles\Ub.dir/objects.a @CMakeFiles\Ub.dir\objects1.rsp
+C:\PROGRA~2\msys2\mingw64\bin\C__~1.EXE -g -Wl,--whole-archive CMakeFiles\Ub.dir/objects.a -Wl,--no-whole-archive -o Ub.exe -Wl,--out-implib,libUb.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\Ub.dir\linkLibs.rsp

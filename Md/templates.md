@@ -1952,6 +1952,100 @@ struct Basis {
         return res;
     }
 };
+constexpr int inf = 1E9;
+template<class T, int M>
+struct Linearbasis {
+    bool has_zero = false;
+    int dimension{0};
+    std::array<T, M>basis {};
+    std::array<int, M>time {};
+    Linearbasis() {
+        basis.fill(0);
+        time.fill(-1);
+    }
+    bool insert(T val, int t = inf) noexcept {
+        while (val) {
+            int log = std::__lg(val);
+            if (!basis[log]) {
+                basis[log] = val;
+                time[log] = t;
+                ++dimension;
+                return true;
+            }
+            if (time[log] < t) {
+                std::swap(time[log], t);
+                std::swap(basis[log], val);
+            }
+            val ^= basis[log];
+        }
+        has_zero = true;
+        return false;
+    }
+    T max(T x = {0}, int t = 0) const noexcept {
+        for (int k = M - 1; k >= 0; k -= 1) {
+            if (basis[k] && time[k] >= t) {
+                x = std::max(x, x ^ basis[k]);
+            }
+        }
+        return x;
+    }
+    T min(T y = std::numeric_limits<T>::max(), int t = 0) const noexcept{
+        for (int k = M - 1; k >= 0; k -= 1) {
+            if (basis[k] && time[k] >= t) {
+                y = std::min(y, y ^ basis[k]);
+            }
+        }
+        return y;
+    }
+    bool contains(T val, int t = 0) const noexcept {
+        for (int k = M - 1; k >= 0; k -= 1) {
+            if ((val >> k & 1) && time[k] >= t) {
+                val ^= basis[k];
+            }
+        }
+        return val == 0;
+    }
+    T select(T k, int t = 0) const noexcept {
+        u64 total = (1ULL << dimension) + (has_zero ? 1 : 0);
+        if (k >= total) {
+            return T{-1};
+        }
+        if (has_zero) {
+            if (k == 0) {
+                return T{};
+            }
+            k -= 1;
+        }
+        std::vector<T>r;
+        for (int k = 0; k < M; k += 1) {
+            if (!basis[k]) {
+                continue;
+            }
+            T v = basis[k];
+            for (int i = 0; i < k; i += 1) {
+                if ((v >> i & 1)) {
+                    v ^= basis[i];
+                }
+            }
+            r.push_back(v);
+        }
+        T res = 0;
+        for (int i = 0; i < int(r.size()); i += 1) {
+            if (k >> i & 1) {
+                res ^= r[i];
+            }
+        }
+        return res;
+    }
+    void merge(const Linearbasis<T, M>& other, int t = 0) {
+        for (int k = M - 1; k >= 0; k -= 1) {
+            if (other.time[k] >= t) {
+                insert(other.basis[k]);
+            }
+        }
+    }
+};
+using basis = Linearbasis<int, 30>;
 ```
 
 ## Mo
@@ -4140,128 +4234,226 @@ auto main() ->int32_t {
 }
 ```
 
-## Augmenting
+## KM
 
 ```cpp
-auto main() ->int {
-    int n, m, e;
-    std::cin >> n >> m >> e;
-    std::vector<std::vector<int>>adj(n + m + 1);
-    for (int i = 1; i <= e; i += 1) {
-        int u, v;
-        std::cin >> u >> v;
-        adj[u].push_back(v);
-    }
-    int ans = 0;
-    std::vector<int>vis(m + n + 1), mch(n + m + 1);
-    auto dfs = [&](auto && dfs, int u, int c) ->bool {
-        for (const auto & v : adj[u]) {
-            if (vis[v] == c) {
-                continue;
+constexpr int inf = 1E7;
+template<class T>
+struct MaxAssignment {
+    public:
+        T solve(int nx, int ny, std::vector<std::vector<T>> a) {
+            assert(0 <= nx && nx <= ny);
+            assert(int(a.size()) == nx);
+            for (int i = 0; i < nx; ++i) {
+                assert(int(a[i].size()) == ny);
+                for (auto x : a[i])
+                    assert(x >= 0);
             }
-            vis[v] = c;
-            if (!mch[v] || dfs(dfs, mch[v], c)) {
-                mch[v] = u;
-                return true;
+            
+            auto update = [&](int x) {
+                for (int y = 0; y < ny; ++y) {
+                    if (lx[x] + ly[y] - a[x][y] < slack[y]) {
+                        slack[y] = lx[x] + ly[y] - a[x][y];
+                        slackx[y] = x;
+                    }
+                }
+            };
+            
+            costs.resize(nx + 1);
+            costs[0] = 0;
+            lx.assign(nx, std::numeric_limits<T>::max());
+            ly.assign(ny, 0);
+            xy.assign(nx, -1);
+            yx.assign(ny, -1);
+            slackx.resize(ny);
+            for (int cur = 0; cur < nx; ++cur) {
+                std::queue<int> que;
+                visx.assign(nx, false);
+                visy.assign(ny, false);
+                slack.assign(ny, std::numeric_limits<T>::max());
+                p.assign(nx, -1);
+                
+                for (int x = 0; x < nx; ++x) {
+                    if (xy[x] == -1) {
+                        que.push(x);
+                        visx[x] = true;
+                        update(x);
+                    }
+                }
+                
+                int ex, ey;
+                bool found = false;
+                while (!found) {
+                    while (!que.empty() && !found) {
+                        auto x = que.front();
+                        que.pop();
+                        for (int y = 0; y < ny; ++y) {
+                            if (a[x][y] == lx[x] + ly[y] && !visy[y]) {
+                                if (yx[y] == -1) {
+                                    ex = x;
+                                    ey = y;
+                                    found = true;
+                                    break;
+                                }
+                                que.push(yx[y]);
+                                p[yx[y]] = x;
+                                visy[y] = visx[yx[y]] = true;
+                                update(yx[y]);
+                            }
+                        }
+                    }
+                    if (found)
+                        break;
+                    
+                    T delta = std::numeric_limits<T>::max();
+                    for (int y = 0; y < ny; ++y)
+                        if (!visy[y])
+                            delta = std::min(delta, slack[y]);
+                    for (int x = 0; x < nx; ++x)
+                        if (visx[x])
+                            lx[x] -= delta;
+                    for (int y = 0; y < ny; ++y) {
+                        if (visy[y]) {
+                            ly[y] += delta;
+                        } else {
+                            slack[y] -= delta;
+                        }
+                    }
+                    for (int y = 0; y < ny; ++y) {
+                        if (!visy[y] && slack[y] == 0) {
+                            if (yx[y] == -1) {
+                                ex = slackx[y];
+                                ey = y;
+                                found = true;
+                                break;
+                            }
+                            que.push(yx[y]);
+                            p[yx[y]] = slackx[y];
+                            visy[y] = visx[yx[y]] = true;
+                            update(yx[y]);
+                        }
+                    }
+                }
+                
+                costs[cur + 1] = costs[cur];
+                for (int x = ex, y = ey, ty; x != -1; x = p[x], y = ty) {
+                    costs[cur + 1] += a[x][y];
+                    if (xy[x] != -1)
+                        costs[cur + 1] -= a[x][xy[x]];
+                    ty = xy[x];
+                    xy[x] = y;
+                    yx[y] = x;
+                }
             }
+            return costs[nx];
         }
-        return false;
-    };
-    for (int u = 1; u <= n; u += 1) {
-        if (dfs(dfs, u, u)) {
-            ans += 1;
+        std::vector<int> assignment() {
+            return xy;
         }
-    }
-    std::cout << ans << '\n';
-    return 0;
-}
+        std::pair<std::vector<T>, std::vector<T>> labels() {
+            return std::make_pair(lx, ly);
+        }
+        std::vector<T> weights() {
+            return costs;
+        }
+    private:
+        std::vector<T> lx, ly, slack, costs;
+        std::vector<int> xy, yx, p, slackx;
+        std::vector<bool> visx, visy;
+};
 ```
 
 ## MincostFlow
 
-0 - index
-
 ```cpp
-template <class T>
-struct MincostFlow {
-	struct edge {
-		int to;
-		T cap;
-		T cost;
-		edge(const int& to, const T& cap, const T& cost): to(to), cap(cap), cost(cost) {}
-	};
-	int n;
-	std::vector<edge>e;
-	std::vector<std::vector<int>>adj;
-	std::vector<T>h, dis;
-	std::vector<int>pre;
-	bool dijkstra(int s, int t) {
-		dis.assign(n, -1);
-		pre.assign(n, -1);
-		std::priority_queue<std::pair<T,int>, std::vector<std::pair<T,int>>, std::greater<>>Q;
-		Q.push({dis[s] = 0, s});
-		while (not Q.empty()) {
-			auto [d, u] = Q.top();
-			Q.pop();
-			if (dis[u] != d) {
-				continue;
-			}
-			for (const auto & j : adj[u]) {
-				const auto & [v, cap, cost] = e[j];
-				if (cap > 0 and (dis[v] == -1 or dis[v] > d + h[u] - h[v] + cost)) {
-					pre[v] = j;
-					Q.push({dis[v] = d + h[u] - h[v] + cost, v});
-				}
-			}
-		}
-		return dis[t] != -1;
-	}
-	MincostFlow() {}
-	MincostFlow(int n) {
-		this->n = n;
-		e.clear();
-		adj.assign(n, {});
-	}
-	void addEdge(int u, int v, T cap, T cost) {
-		adj[u].push_back(e.size());
-		e.emplace_back(v, cap, cost);
-		adj[v].push_back(e.size());
-		e.emplace_back(u, 0, -cost);
-	}
-	std::pair<T, T> flow(int s, int t) {
-		T flow = 0, cost = 0;
-		h.assign(n, 0);
-		while (dijkstra(s, t)) {
-			for (int i = 0; i < n; i += 1) {
-				h[i] += dis[i];
-			}
-			T aug = std::numeric_limits<T>::max();
-			for (int i = t; i != s; i = e[pre[i] ^ 1].to) {
-				aug = std::min(aug, e[pre[i]].cap);
-			}
-			for (int i = t; i != s; i = e[pre[i] ^ 1].to) {
-				e[pre[i]].cap -= aug;
-				e[pre[i] ^ 1].cap += aug;
-			}
-			flow += aug;
-			cost += aug * h[t];
-		}
-		return std::pair(flow, cost);
-	}
-	struct Edge {
-		int from;
-		int to;
-		T cap;
-		T cost;
-		T flow;
-	};
-	std::vector<Edge> edges() {
-		std::vector<Edge>rec;
-		for (int i = 0; i < e.size(); i += 2) {
-			rec.push_back({.from = e[i + 1].to, .to = e[i].to, .cap = e[i].cap + e[i + 1].cap, .cost = e[i].cost, .flow = e[i + 1].cap});
-		}
-		return rec;
-	}
+template<class T>
+struct MinCostFlow {
+    struct edge {
+        int to;
+        T cap;
+        T cost;
+        edge(int to, T cap, T cost): to{to}, cap{cap}, cost{cost} {}
+    };
+
+    int n;
+    std::vector<edge>e;
+    std::vector<std::vector<int>>adj;
+    std::vector<T>h, dis;
+    std::vector<int>pre;
+
+    bool dijkstra(int s, int t) {
+        pre.assign(n, -1);
+        dis.assign(n, std::numeric_limits<T>::max());
+        std::priority_queue<std::pair<T, int>, std::vector<std::pair<T, int>>, std::greater<>>q;
+        q.push({dis[s] = 0, s});
+        while (!q.empty()) {
+            auto [d, u] = q.top();
+            q.pop();
+            if (dis[u] != d) {
+                continue;
+            }
+            for (int i : adj[u]) {
+                auto [v, cap, cost] = e[i];
+                if (cap > 0 && dis[v] > d + h[u] - h[v] + cost) {
+                    pre[v] = i;
+                    q.push({dis[v] = d + h[u] - h[v] + cost, v});
+                }
+            }
+        }
+        return dis[t] != std::numeric_limits<T>::max();
+    }
+
+    MinCostFlow() {}
+    MinCostFlow(int n): n{n}, e{}, adj(n) {}
+
+    void addEdge(int u, int v, T cap, T cost) {
+        adj[u].push_back(e.size());
+        e.emplace_back(v, cap, cost);
+        adj[v].push_back(e.size());
+        e.emplace_back(u, 0, -cost);
+    }
+
+    std::pair<T, T> flow(int s, int t) {
+        T flow = 0, cost = 0;
+        h.assign(n, 0);
+        while (dijkstra(s, t)) {
+            for (int i = 0; i < n; i += 1) {
+                h[i] += dis[i];
+            }
+            T aug = std::numeric_limits<T>::max();
+            for (int i = t; i != s; i = e[pre[i] ^ 1].to) {
+                aug = std::min(aug, e[pre[i]].cap);
+            }
+            for (int i = t; i != s; i = e[pre[i] ^ 1].to) {
+                e[pre[i]].cap -= aug;
+                e[pre[i] ^ 1].cap += aug;
+            }
+            flow += aug;
+            cost += aug * h[t];
+        }
+        return std::pair(flow, cost);
+    }
+
+    struct Edge {
+        int from;
+        int to;
+        T cap;
+        T cost;
+        T flow;
+    };
+    std::vector<Edge> edges() {
+        std::vector<Edge> a;
+        for (int i = 0; i < e.size(); i += 2) {
+            Edge x;
+            x.from = e[i + 1].to;
+            x.to = e[i].to;
+            x.cap = e[i].cap + e[i + 1].cap;
+            x.cost = e[i].cost;
+            x.flow = e[i + 1].cap;
+            a.push_back(x);
+        }
+        return a;
+    }
 };
 namespace atcoder {
 template <class Cap, class Cost> struct mcf_graph {
@@ -4454,103 +4646,215 @@ template <class Cap, class Cost> struct mcf_graph {
 ```
 
 ## Maxflow
+$\text{MaxFlow == MinCut}$
+网络流的定义：
+- 有一个 s 点有一个 t 点，以及若干其它点
+- 有若干有向边。其中 s 点没有入边，t 点没有出边
+- 对于除了 s 点和 t 点以外的所有点，入流量之和等于出流量之和
+- 形象的比喻想象水管，s 点是无限的水源，t 点是无限的出口，边的权值等于管的容量
+- 整个网络同时能通过的最大流量，这个流量等于 s 点的所有出流量，等于 t 点的所有入流量
+
+割的定义：
+- 设置两个集合 S 集合和 T 集合，且 s 点属于 S 集合，t 点属于 T 集合
+- 其它所有点属于 S 集合或 T 集合之一
+- 所有来自于 S 集合，指向 T 集合的边，权值之和为割的大小
+定理：
+- 最小割 = 最大流
+- 直观理解就是 最小割的边满流的情况下，无法再找到增加流量的办法
+能否套用最小割方法的判断：
+1. 把最少/最小代价对应到最小割
+2. 把二元选择问题 改变为集合选择问题
+3. 不合法的方案，定义成流量无穷大的边
+建图过程：
+1. 根据可以做二元选择的对象定义所有的点
+2. 根据不合法方案连接无穷大的边，明确点的集合归属含义
+3. 根据点的集合归属含义，明确所有需要支付的成本
+额外思路：
+1. 先假设能获得所有收益，然后把得不到的收益也记作成本，来解决最大化收益问题
+
+
+### 棋子问题
+有 N*M 的棋盘，上面有 K 个棋子，位于 Ai 行 Bi 列。
+
+一次操作可以消除一行的棋子或者消除一列的棋子。
+
+问最少要多少次操作，才能消灭所有的棋子？
+
+1 ≤ N,M ≤ 100
+
+思考过程：
+
+- 最少次操作 => 最小代价 => 最小割（把边看做代价）
+- 每一行，可以选择消除或不消除
+- 每一列，可以选择消除或不消除
+- 所以网络中的点是 行 与 列
+- 不合法的方案，表示有棋子没有被消除。
+
+建模过程：
+
+- 行属于 S 集合表示不消除，属于 T 集合表示消除
+- 列属于 T 集合表示不消除，属于 S 集合表示消除
+- 不合法方案的边：
+   - 对于为 1 的单元格，行不消除且列不消除非法
+   - 对应单元格建立行指向列的无穷大流量边
+- 支付成本：
+   - s 到行，流量为 1
+   - 列到 t，流量为 1
+
+### 设备采购问题
+有 N 种设备，采购价格分别是 A1,A1,...AN
+
+和 M 个项目，项目收益分别是 B1,B1,...BM
+
+另外有 K 个约束条件，Ci,Di 表示完成 Di 号项目，必须要拥有 Ci 号设备。
+
+问最高能获得的利润是多少（利润等于收益-成本）
+
+思考过程：
+
+- 先假设能获得所有收益，然后把得不到的收益也记作成本
+- 设备：采购与不采购；项目：做与不做
+- 不合法方案：项目依赖的设备没有采购，但又要做对应项目
+
+建图过程：
+
+- 设备属于 S 集合表示不采购，属于 T 集合表示采购
+- 项目属于 S 集合表示不做，属于 T 集合表示做
+- 不合法方案：
+   - 项目依赖设备，但设备未采购，不合法
+   - 有依赖时，从设备指向项目，流量无穷大
+- 支付成本：
+   - 设备采购支付成本，s 点指向设备，流量为采购成本
+   - 项目不做支付损失，项目指向 t 点，流量为项目收益
+
+------
+
+### 取数问题
+
+在一个 M*N 的棋盘中，每个方格有一个正整数。现在要从方格中取若干个数，使任意 2 个数所在方格没有公共边，并使取出的数总和最大。试设计一个满足要求的取数算法。
+
+思考过程：
+
+- 先假设能获得所有数，然后建图使方案合法
+- 每个数选择与不选择
+- 不合法的方案：相邻的格子不能同时选
+
+建图过程：
+
+- 经过尝试和思考，得出结论，区分坐标奇偶性（横坐标和纵坐标之和的奇偶性）
+- 偶数格属于 S 集合表示选择，属于 T 集合表示不选择
+- 奇数格属于 T 集合表示选择，属于 S 集合表示不选择
+- 不合法方案：
+   - 相邻的格子不能同时选
+   - 相邻的格子，从偶数格向奇数格建边，流量无穷大
+- 支付代价
+   - 偶数格不选择，s 向偶数格建边，流量为格子的值
+   - 奇数格不选择，奇数格向 t 建边，流量为格子的值
 
 ```cpp
 constexpr int inf = 1E9;
 template <class T>
 struct MaxFlow {
-    struct edge {
-        int to;
-        T cap;
-        edge(const int& to, const T& cap): to(to), cap(cap) {}
-    };
-    int n;
-    std::vector<edge>e;
-    std::vector<std::vector<int>>adj;
-    std::vector<T>cur, h;
-    MaxFlow() {}
-    MaxFlow(int n) {
-        this->n = n;
-        e.clear();
-        adj.assign(n, {});
-        cur.resize(n);
-        h.resize(n);
-    }
-    bool bfs(int s, int t) {
-        h.assign(n, -1);
-        std::queue<int>Q;
-        h[s] = 0;
-        Q.push(s);
-        while (not Q.empty()) {
-            auto u = Q.front();
-            Q.pop();
-            for (const auto & i : adj[u]) {
-                const auto & [to, cap] = e[i];
-                if (cap > 0 and h[to] == -1) {
-                    h[to] = h[u] + 1;
-                    if (to == t) {
-                        return true;
-                    }
-                    Q.push(to);
-                }
-            }
-        }
-        return false;
-    }
-    T dfs(int u, int t, T f) {
-        if (u == t) {
-            return f;
-        }
-        T r = f;
-        for (int& i = cur[u]; i < (int)adj[u].size(); i += 1) {
-            const int j = adj[u][i];
-            auto [v, cap] = e[j];
-            if (cap > 0 and h[v] == h[u] + 1) {
-                auto a = dfs(v, t, std::min(r, cap));
-                e[j].cap -= a;
-                e[j ^ 1].cap += a;
-                r -= a;
-                if (r == 0) {
-                    return f;
-                }
-            }
-        }
-        return f - r;
-    }
-    void addEdge(int u, int v, T c) {
-        adj[u].push_back(e.size());
-        e.emplace_back(v, c);
-        adj[v].push_back(e.size());
-        e.emplace_back(u, 0);
-    }
-    T flow(int s, int t) {
-        T res = 0;
-        while (bfs(s, t)) {
-            cur.assign(n, 0);
-            res += dfs(s, t, std::numeric_limits<T>::max());
-        }
-        return res;
-    }
-    std::vector<bool> minCut() {
-        std::vector<bool> c(n);
-        for (int i = 0; i < n; i++) {
-            c[i] = (h[i] != -1);
-        }
-        return c;
-    }
-    struct Edge {
-        int from;
-        int to;
-        T cap;
-        T flow;
-    };
-    std::vector<Edge>edges() {
-        std::vector<Edge>rec;
-        for (int i = 0; i < e.size(); i += 2) {
-            rec.push_back({.from = e[i + 1].to, .to = e[i].to, .cap = e[i].cap + e[i + 1].cap, .flow = e[i + 1].cap});
-        }
-        return rec;
-    }
+	struct edge {
+		int to;
+		T cap;
+		edge(const int& to, const T& cap): to{to}, cap{cap} {}
+	};
+
+	int n;
+	std::vector<edge>e;
+	std::vector<std::vector<int>>adj;
+	std::vector<int>cur, h;
+
+	MaxFlow() {}
+	MaxFlow(int n): n{n}, e{}, adj(n), cur(n), h(n) {}
+
+	bool bfs(int s, int t) {
+		h.assign(n, -1);
+		std::queue<int>q;
+		h[s] = 0;
+		q.push(s);
+		while (!q.empty()) {
+			auto u = q.front();
+			q.pop();
+			for (int i : adj[u]) {
+				auto [v, c] = e[i];
+				if (c > 0 && h[v] == -1) {
+					h[v] = h[u] + 1;
+					if (v == t) {
+						return true;
+					}
+					q.push(v);
+				}
+			}
+		}
+		return false;
+	}
+
+	T dfs(int u, int t, T f) {
+		if (u == t) {
+			return f;
+		}
+		auto r = f;
+		for (int& i = cur[u]; i < int(adj[u].size()); i += 1) {
+			int j = adj[u][i];
+			auto [v, c] = e[j];
+			if (c > 0 && h[v] == h[u] + 1) {
+				auto a = dfs(v, t, std::min(r, c));
+				e[j].cap -= a;
+				e[j ^ 1].cap += a;
+				r -= a;
+				if (r == 0) {
+					return f;
+				}
+			}
+		}
+		return f - r;
+	}
+
+	void addEdge(int u, int v, T cap) {
+		adj[u].push_back(int(e.size()));
+		e.emplace_back(v, cap);
+		adj[v].push_back(int(e.size()));
+		e.emplace_back(u, 0);
+	}
+
+	T flow(int s, int t) {
+		T ans = 0;
+		while (bfs(s, t)) {
+			cur.assign(n, 0);
+			ans += dfs(s, t, std::numeric_limits<T>::max());
+		}
+		return ans;
+	}
+
+	std::vector<bool>mincut() {
+		std::vector<bool>c(n);
+		for (int i = 0; i < n; i += 1) {
+			c[i] = (h[i] != -1);
+		}
+		return c;
+	}
+
+	struct Edge {
+		int from;
+		int to;
+		T cap;
+		T flow;
+		Edge() {}
+	};
+	std::vector<Edge>edges() {
+		std::vector<Edge>a;
+		for (int i = 0; i < e.size(); i += 2) {
+			Edge x;
+			x.from = e[i + 1].to;
+			x.to = e[i].to;
+			x.cap = e[i].cap + e[i + 1].cap;
+			x.flow = e[i + 1].cap;
+			a.push_back(x);
+		}
+		return a;
+	}
 };
 #ifndef ATCODER_MAXFLOW_HPP
 #define ATCODER_MAXFLOW_HPP 1
@@ -6774,6 +7078,32 @@ comp.erase(std::unique(comp.begin(), comp.end()), comp.end());
 std::cout << (r - l + 1 - comp.size() - (l == 1)) << '\n';
 ```
 
+线性筛扩展可以求很多积性函数
+
+```cpp
+void sieve (int n) {
+	std::fill (is_composite, is_composite + n, false);
+	func[1] = 1;
+	for (int i = 2; i < n; ++i) {
+		if (!is_composite[i]) {
+			prime.push_back (i);
+			func[i] = 1; cnt[i] = 1;
+		}
+		for (int j = 0; j < prime.size () && i * prime[j] < n; ++j) {
+			is_composite[i * prime[j]] = true;
+			if (i % prime[j] == 0) {
+				func[i * prime[j]] = func[i] / cnt[i] * (cnt[i] + 1);
+				cnt[i * prime[j]] = cnt[i] + 1;
+				break;
+			} else {
+				func[i * prime[j]] = func[i] * func[prime[j]];
+				cnt[i * prime[j]] = 1;
+			}
+		}
+	}
+}
+```
+
 ## Comb
 
 $$
@@ -7214,6 +7544,15 @@ void solve () {
 $$
 \bmod \rightarrow [0,\lfloor \frac{x-1}{2}\rfloor]
 $$
+
+线性逆元
+
+```cpp
+inv[1] = 1;
+for (int i = 1; i <= n; i += 1) {
+    inv[i] = (P - P / i)* inv[P % i] % P;
+}
+```
 
 ## subMask
 

@@ -32,18 +32,23 @@ constexpr bool chmin (T& x, T y) {
     return false;
 }
 
-void solve () {
-
-}
-
 auto main() ->int {
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
+    int n, k;
+    std::cin >> n >> k;
 
-    int t;
-    std::cin >> t;
-    while (t--) {
-        solve();
+    i64 sum = 0;
+    std::vector<int>p(n + 1), s(n + 1);
+    for (int i = 1; i <= n; ++i) {
+        std::cin >> p[i] >> s[i];
+        sum += p[i];
+        sum += s[i];
+    }
+
+    i64 ans = 1E18;
+    for (int i = 1; i <= n; i += 1) {
+
     }
     return 0;
 }
