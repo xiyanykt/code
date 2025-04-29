@@ -3475,6 +3475,30 @@ std::vector<int> kmp(std::string s) {
 }
 ```
 
+## SEQ-automaton
+
+```cpp
+std::vector<std::array<int, 26>>nxt(n + 1);
+nxt[n].fill(n);
+std::vector<int>f(n + 2, n);
+f[n + 1] = 0;
+f[n] = 1;
+for (int i = n - 1; i >= 0; i -= 1) {
+    nxt[i] = nxt[i + 1];
+    nxt[i][s[i] - 'a'] = i;
+    for (int j = 0; j < k; j += 1) {
+        chmin(f[i], f[nxt[i][j] + 1] + 1);
+    }
+}
+int p = 0;
+for (char c : t) {
+    if (p > n) {
+        break;
+    }
+    p = nxt[p][c - 'a'] + 1;
+}
+```
+
 ## Z
 
 $z_i$ 表示 $s$ 和 $s[i,n-1]$ (即 $s_i$ 开头的后缀) 的LCP 
@@ -4231,6 +4255,21 @@ auto main() ->int32_t {
         std::cout << dis[Index[i]] << ' ';
     }
     return 0;
+}
+```
+
+## partite
+
+二分图即相邻点颜色不同，按照颜色分域。
+
+```cpp
+bool isBipartite(int n, vector<pair<int, int>>& edges) {
+    for (auto [u, v] : edges) {
+        if (dsu.same(u, v)) return false;
+        dsu.merge(u, v + n);
+        dsu.merge(v, u + n);
+    }
+    return true;
 }
 ```
 
@@ -7576,6 +7615,36 @@ do {
 - `int __builtin_parity(unsigned int x)` ：判断 `x` 的二进制中 1 的个数的奇偶性。
 
 这些函数都可以在函数名末尾添加 `l` 或 `ll` （如 `__builtin_popcountll`）来使参数类型变为 `(unsigned) long` 或 `(unsigned) long long` （返回值仍然是 `int` 类型）。例如，我们有时候希望求出一个数以二为底的对数，如果不考虑 0 的特殊情况，就相当于这个数二进制的位数 -1 ，而一个数 `n` 的二进制表示的位数可以使用 `32 - __builtin_clz(n)` 表示，因此 `31 - __builtin_clz(n)` 就可以求出 `n` 以二为底的对数。
+
+```sh
+if [ $# -lt 1 ]; then
+    echo "Usage: ./run.sh filename (without .cpp)"
+    exit 1
+fi
+NAME=$1
+echo "Compiling..."
+g++ "$NAME.cpp" -Wall -Wl,--stack=1073741824 -O2 -std=c++20 -lstdc++exp -D LOCAL -o "$NAME"
+if [ $? -ne 0 ]; then
+    echo "Compilation failed."
+    exit 1
+fi
+echo "Running..."
+START=$(date +%s%3N)
+if [ -f "$NAME.in" ]; then
+    ./"$NAME" < "$NAME.in" > "$NAME.out"
+else
+    ./"$NAME"
+fi
+RUN_STATUS=$?
+END=$(date +%s%3N)
+DURATION_MS=$((END - START))
+if [ $RUN_STATUS -ne 0 ]; then
+    echo "Runtime error (exit code: $RUN_STATUS)"
+else
+    echo "Execution time: ${DURATION_MS} ms"
+fi
+rm "$NAME"
+```
 
 ```cpp
 int c = 1;
