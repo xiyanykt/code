@@ -332,6 +332,99 @@ public:
         }
         return p;
     }
+
+    // assert(this->at(0) != 0)
+    constexpr Polynomial inv(int m = -1) const {
+        const int n = this->size();
+        if (m < 0) {
+            m = n;
+        }
+
+        Polynomial p = Polynomial{this->at(0).inv()};
+        p.reserve(4 * m);
+        for (int k = 2; k / 2 < m; k <<= 1) {
+            Polynomial q = Polynomial(this->begin(), this->begin() + std::min(n, k)).truncate(2 * k);
+            p.resize(2 * k);
+            dft(p), dft(q);
+            for (int i = 0; i < 2 * k; i += 1) {
+                p[i] = p[i] * (2 - p[i] * q[i]);
+            }
+            idft(p);
+            p.resize(k);
+        }
+        return p.truncate(m);
+    }
+
+    constexpr Polynomial ln(int m = -1) const {
+        const int n = this->size();
+        if (m < 0) {
+            m = n;
+        }
+        return (deriv() * inv(m)).integr().truncate(m);
+    }
+
+    constexpr Polynomial exp(int m = -1) const {
+        const int n = this->size();
+        if (m < 0) {
+            m = n;
+        }
+
+        Polynomial p{1};
+        int k = 1;
+        while (k < m) {
+            k <<= 1;
+            p = (p * (Polynomial{1} - p.ln(k) + truncate(k))).truncate(k);
+        }
+        return p.truncate(m);
+    }
+
+    constexpr Polynomial sqrt(int m = -1) const {
+        const int n = this->size();
+        if (m < 0) {
+            m = n;
+        }
+        Polynomial p{1};
+        int k = 1;
+        constexpr T inv2 = T(2).inv();
+        while (k < m) {
+            k <<= 1;
+            p = (p + (truncate(k) * p.inv(k)).truncate(k)) * inv2;
+        }
+        return p.truncate(m);
+    }
+
+    constexpr Polynomial power(long long k, int m, long long k2 = -1) const {
+        if (0 < k and k <= (1 << 10)) {
+            Polynomial p = (*this);
+            Polynomial ans{1};
+            for (; k; k >>= 1) {
+                if (k & 1) {
+                    ans *= p;
+                    if (static_cast<int>(ans.size()) > m) {
+                        ans.truncate(m);
+                    }
+                }
+
+                p *= p;
+                if (static_cast<int>(p.size()) > m) {
+                    p.truncate(m);
+                }
+            }
+            return ans.truncate(m);
+        }
+
+        k2 = k2 < 0 ? k : k2;
+        unsigned int i = 0;
+        while (i < this->size() and this->at(i) == T{}) {
+            i++;
+        }
+        if (i == this->size() or k * i >= m) {
+            return Polynomial(m, T{});
+        }
+        T v = this->at(i);
+        Polynomial f = divxk(i) / v;
+        return (f.ln(m - i * k) * k).exp(m - i * k).mulxk(i * k) * ::power(v, k2);
+    }
 };
 template <class T>
 std::vector<T> Polynomial<T>::w;

@@ -6305,18 +6305,21 @@ constexpr T power(T a, i64 b) {
     }
     return r;
 }
+
 template <class T, T P>
 class ModuloInteger {
     T x;
     static T Mod;
     using i64 = long long;
     using i128 = __int128;
+    
     static constexpr int multiply(int a, int b, const int Mod) {
         return i64(a) * b % Mod;
     }
     static constexpr i64 multiply(i64 a, i64 b, const i64 Mod) {
         return static_cast<i128>(a) * b % Mod;
     }
+
     T norm(T x) const {
         return (x < 0 ? x + getMod() : (x >= getMod() ? x - getMod() : x));
     }
@@ -6326,75 +6329,96 @@ public:
     static constexpr T getMod() {
         return (P > 0 ? P : Mod);
     }
+
     static void setMod(T m) {
         Mod = m;
     }
+
     T val() const {
         return x;
     }
     explicit operator T() const {
         return x;
     }
+
     ModuloInteger operator-() const {
         return ModuloInteger(getMod() - x);
     }
+
     ModuloInteger inv() const {
-        assert(*this->val() != 0);
+        assert(this->val() != 0);
         return ModuloInteger(power(*this, getMod() - 2));
     }
+
     ModuloInteger &operator*=(ModuloInteger& rsh) & {
         x = multiply(x, rsh.val(), getMod());
         return *this;
     }
+
     ModuloInteger &operator+=(ModuloInteger rhs) & {
         x = norm(x + rhs.x);
         return *this;
     }
+
     ModuloInteger &operator-=(ModuloInteger rhs) & {
         x = norm(x - rhs.x);
         return *this;
     }
+    
     ModuloInteger &operator/=(ModuloInteger rhs) & {
-        return *this *= rhs.inv();
+        x = multiply(x, rhs.inv().val(), getMod());
+        return *this;
     }
+
     friend  ModuloInteger operator+(ModuloInteger lhs, ModuloInteger rhs) {
         return lhs += rhs;
     }
+
     friend  ModuloInteger operator-(ModuloInteger lhs, ModuloInteger rhs) {
         return lhs -= rhs;
     }
+
     friend  ModuloInteger operator*(ModuloInteger lhs, ModuloInteger rhs) {
         return lhs *= rhs;
     }
+
     friend  ModuloInteger operator/(ModuloInteger lhs, ModuloInteger rhs) {
         return lhs /= rhs;
     }
+
     constexpr friend bool operator==(ModuloInteger lsh, ModuloInteger rsh) {
         return lsh.val() == rsh.val();
     }
+
     constexpr friend bool operator!=(ModuloInteger lsh, ModuloInteger rsh) {
         return lsh.val() != rsh.val();
     }
+
     constexpr friend std::strong_ordering operator<=>(ModuloInteger lsh, ModuloInteger rsh) {
         return lsh.val() <=> rsh.val();
     }
+
     friend  std::istream &operator>>(std::istream &is, ModuloInteger &a) {
         i64 v;
         is >> v;
         a = ModuloInteger(v);
         return is;
     }
+
     friend  std::ostream &operator<<(std::ostream &os, const ModuloInteger &a) {
         return os << a.val();
     }
 };
+
 template <>
 int ModuloInteger<int, 0>::Mod = 998244353;
 template <>
 long long ModuloInteger<long long, 0>::Mod = 4179340454199820289;
-constexpr i64 P = 4179340454199820289;
-using Z = ModuloInteger<i64, P>;
 
+// constexpr i64 P = 4179340454199820289;
+// using Z = ModuloInteger<i64, P>;
+constexpr int P = 998244353;
+using Z = ModuloInteger<int, P>;
 template <class T>
 struct Polynomial : public std::vector<T> {
     static std::vector<T> w;
@@ -6414,7 +6438,7 @@ struct Polynomial : public std::vector<T> {
             w[i] = w[i * 2];
         }
     }
-    constexpr friend void dft(Polynomial& a) {
+    static void dft(Polynomial& a) {
         const int n = a.size();
         assert((n & (n - 1)) == 0);
         initW(n);
@@ -6428,7 +6452,7 @@ struct Polynomial : public std::vector<T> {
             }
         }
     }
-    constexpr friend void idft(Polynomial& a) {
+    static void idft(Polynomial& a) {
         const int n = a.size();
         assert((n & (n - 1)) == 0);
         initW(n);
@@ -6586,6 +6610,92 @@ public:
         }
         return p;
     }
+    // assert(this->at(0) != 0)
+    constexpr Polynomial inv(int m = -1) const {
+        const int n = this->size();
+        if (m < 0) {
+            m = n;
+        }
+        Polynomial p = Polynomial{this->at(0).inv()};
+        p.reserve(4 * m);
+        for (int k = 2; k / 2 < m; k <<= 1) {
+            Polynomial q = Polynomial(this->begin(), this->begin() + std::min(n, k)).truncate(2 * k);
+            p.resize(2 * k);
+            dft(p), dft(q);
+            for (int i = 0; i < 2 * k; i += 1) {
+                p[i] = p[i] * (2 - p[i] * q[i]);
+            }
+            idft(p);
+            p.resize(k);
+        }
+        return p.truncate(m);
+    }
+    constexpr Polynomial ln(int m = -1) const {
+        const int n = this->size();
+        if (m < 0) {
+            m = n;
+        }
+        return (deriv() * inv(m)).integr().truncate(m);
+    }
+    constexpr Polynomial exp(int m = -1) const {
+        const int n = this->size();
+        if (m < 0) {
+            m = n;
+        }
+
+        Polynomial p{1};
+        int k = 1;
+        while (k < m) {
+            k <<= 1;
+            p = (p * (Polynomial{1} - p.ln(k) + truncate(k))).truncate(k);
+        }
+        return p.truncate(m);
+    }
+    constexpr Polynomial sqrt(int m = -1) const {
+        const int n = this->size();
+        if (m < 0) {
+            m = n;
+        }
+        Polynomial p{1};
+        int k = 1;
+        constexpr T inv2 = T(2).inv();
+        while (k < m) {
+            k <<= 1;
+            p = (p + (truncate(k) * p.inv(k)).truncate(k)) * inv2;
+        }
+        return p.truncate(m);
+    }
+    constexpr Polynomial power(long long k, int m, long long k2 = -1) const {
+        if (0 < k and k <= (1 << 10)) {
+            Polynomial p = (*this);
+            Polynomial ans{1};
+            for (; k; k >>= 1) {
+                if (k & 1) {
+                    ans *= p;
+                    if (static_cast<int>(ans.size()) > m) {
+                        ans.truncate(m);
+                    }
+                }
+
+                p *= p;
+                if (static_cast<int>(p.size()) > m) {
+                    p.truncate(m);
+                }
+            }
+            return ans.truncate(m);
+        }
+        k2 = k2 < 0 ? k : k2;
+        unsigned int i = 0;
+        while (i < this->size() and this->at(i) == T{}) {
+            i++;
+        }
+        if (i == this->size() or k * i >= m) {
+            return Polynomial(m, T{});
+        }
+        T v = this->at(i);
+        Polynomial f = divxk(i) / v;
+        return (f.ln(m - i * k) * k).exp(m - i * k).mulxk(i * k) * ::power(v, k2);
+    }
 };
 template <class T>
 std::vector<T> Polynomial<T>::w;
@@ -6721,7 +6831,66 @@ $\left \langle 1,p,p^2,p^3,\cdots \right \rangle$ 的生成函数为 $\sum_{n \g
 
 二项式定理：$(a+b)^n=\sum_{k=0}^{n}\binom{n}{k}a^kb^{n-k}$
 
-$1+\binom{k}{1}x+\binom{k}{2}x^2+\cdots+\binom{k}{k-1}x^{k-1}=(1+x)^k-x^k$ 。
+$1+\binom{k}{1}x+\binom{k}{2}x^2+\cdots+\binom{k}{k-1}x^{k-1}=(1+x)^k-x^k$​ 。
+
+麦克劳林展开式
+
+$e^x = \sum_{n = 0}^{\infin}\frac{x^n}{n!}$
+
+$\sin x = \sum_{n = 0}^{\infin}(-1)^n\frac{x^{2n + 1}}{(2n + 1)!}$
+
+$\cos x = \sum_{n = 0}^{\infin}(-1)^n\frac{x ^ {2n}}{(2n)!}$
+
+$\ln (1+x) = \sum_{n = 1}^{\infin}(-1)^{n + 1}\frac{x^n}{n}, x \in (-1, 1]$
+
+$\ln(1-x) = -\sum_{n = 1}^{\infin}\frac{x^n}{n}, |x| < 1$
+
+$\frac{1}{1-x}=\sum_{n=0}^{\infin}x^n, |x| < 1$
+
+$\arctan x = \sum_{n = 0}^{\infin}(-1)^n\frac{x^{2n + 1}}{2n + 1},x \in [-1, 1]$
+
+
+
+付公主有 $n$ 种商品，她要准备出摊了
+
+每种商品体积为 $v_i$，都有无限件
+
+给定 $m$，对于 $s \in [1, m]$，请你回答用这些商品恰好装 $s$ 体积的方案数
+
+对于一个体积为 $v$ 的物品来说，$a_n = \lbrace 1，x^{v}，x^{2v} \cdots\rbrace$
+
+$G(x)*x^v+1=G(x) \iff G(x) = \frac{1}{1 - x^v}$
+
+显然有 $ans_s = [x^s]\prod_{i=1}^{n}\frac{1}{1 - x^{v_i}}$
+
+考虑 $F = \prod_{i=1}^{n}\frac{1}{1 - x^{v_i}}$
+
+$\ln F = \ln \prod_{i=1}^{n}\frac{1}{1 - x^{v_i}} = \sum_{i=1}^{n}\ln \frac{1}{1 - x^{v_i}}$
+
+考虑麦克劳林展开式，$\ln \frac{1}{1 - x^{v_i}} = -\ln(1-x^{v_i})=\sum_{n=1}^{\infin}\frac{x^{nv_i}}{n}$
+
+$\ln F = \sum_{i=1}^{n}\sum_{j=1}^{\infin}\frac{x^{jv_i}}{j}$
+
+由于只考虑 $s \in [1, m]$，因此保留前 $m$ 项即可，显然内层暴力枚举单点加的复杂度是调和级数的，最后 $\text{exp}$ 即可得到 $F$
+
+```cpp
+std::vector<int>a(m + 1);
+for (int i = 1; i <= n; i += 1) {
+    int v;
+    std::cin >> v;
+    a[v] += 1;
+}
+Poly p(m + 1);
+for (int i = 1; i <= m; i += 1) {
+    for (int j = 1; j <= m / i; j += 1) {
+        p[i * j] += a[i] * Z(j).inv();
+    }
+}
+auto r = p.exp();
+for (int i = 1; i <= m; i += 1) {
+    std::cout << r[i] << '\n';
+}
+```
 
 ## Matrix
 
