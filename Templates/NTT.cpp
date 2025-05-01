@@ -238,7 +238,7 @@ public:
         for (int i = 0; i < int(a.size()); i += 1) {
             a[i] = a[i] * b;
         }
-        return b;
+        return a;
     }
 
     constexpr Polynomial mulxk(int k) const {
