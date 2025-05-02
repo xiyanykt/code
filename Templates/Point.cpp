@@ -632,6 +632,38 @@ std::vector<Point<T>> minkowskisum(std::vector<Point<T>>& a, std::vector<Point<T
     return c;
 }
 
+template <class T>
+std::pair<size_t, size_t>tangent(const std::vector<Point<T>>& p, const Point<T> a) {
+    int n = p.size();
+    auto extreme = [&](auto dir) ->size_t {
+        const auto check = [&](size_t i) {
+            return cross(dir(p[i]), p[(i + 1) % n] - p[i]) >= 0;
+        };
+        const auto dir0 = dir(p[0]);
+        const auto check0 = check(0);
+
+        if (!check(0) && check(n - 1)) {
+            return 0;
+        }
+        const auto cmp = [&](const Point<T>& v) {
+            const size_t vi = &v - p.data();
+            if (vi == 0) {
+                return 1;
+            }
+            const auto checkv = check(vi);
+            const auto t = cross(dir0, v - p[0]);
+            if (vi == 1 && checkv == check0 && t == 0) {
+                return 1;
+            }
+            return checkv ^ (checkv == check0 && t <= 0);
+        };
+        return std::partition_point(p.begin(), p.end(), cmp) - p.begin();
+    };
+    auto i = extreme([&](const Point<T>& u) { return u - a; });
+    auto j = extreme([&](const Point<T>& u) { return a - u; });
+    return {i, j};
+}
+
 template<class F>
 f64 integral(f64 l, f64 r, const F& f) {
     static constexpr f64 eps = 1e-9;
