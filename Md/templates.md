@@ -5062,7 +5062,7 @@ template <class Cap> struct mf_graph {
 
 |         题意          |                     转化                      |             连边              |
 | :-------------------: | :-------------------------------------------: | :---------------------------: |
-| $X_{a} - X_{b} \ge c$ |             $X_{b} - X_{a} \le c$             |       `add(a, b, -c);`        |
+| $X_{a} - X_{b} \ge c$ |            $X_{b} - X_{a} \le -c$             |       `add(a, b, -c);`        |
 | $X_{a} - X_{b} \le c$ |             $X_{a} - X_{b} \le c$             |        `add(b, a, c);`        |
 |   $X_{a} == X_{b}$    | $X_{a} - X_{b} \le 0$ , $X_{b} - X_{a} \le 0$ | `add(b, a, 0), add(a, b, 0);` |
 
@@ -5102,6 +5102,66 @@ int main(void) {
         std::cout << ((dis[i] - dis[i - 1]) ^ 1) << " \n"[i == n];
     }
     return 0;
+}
+```
+
+给定 $m$ 个约束：$\sum_{i = l}^{r}A_i=s$，求解满足约束的$A$的最小的 $sum \ of \ A$。
+
+```cpp
+auto main() ->int {
+    int n, m;
+    std::cin >> n >> m;
+    std::vector<std::array<int, 3>>edges;
+    // s[i] - s[i - 1] >= 1 -> s[i - 1] - s[i] <= -1 -> s[i - 1] <= s[i] - 1;
+    for (int i = 1; i <= n; i += 1) {
+        edges.push_back({i, i - 1, -1});
+    }
+    for (int i = 1; i <= m; i += 1) {
+        int l, r, x;
+        std::cin >> l >> r >> x;
+        // s[r] - s[l - 1] >= x && s[r] - s[l - 1] <= x
+        // s[r] - s[l - 1] >= x -> s[l - 1] - s[r] <= -x
+        edges.push_back({r, l - 1, -x});
+        // s[r] - s[l - 1] <= x
+        edges.push_back({l - 1, r, x});
+    }
+    std::vector<i64>f(n + 1), g(n + 1);
+    for (int t = 0; t <= n + 3; t += 1) {
+        for (auto [u, v, w] : edges) {
+            chmin(f[v], g[u] + w);
+        }
+        if (t == n + 3 && g != f) {
+            std::cout << -1 << '\n';
+            std::exit(0);
+        }
+        g = f;
+    }
+    std::cout << f[n] - f[0] << '\n';
+    return 0;
+}
+```
+
+```cpp
+bool spfa(int n, int s) {
+  memset(dis, 0x3f, (n + 1) * sizeof(int));
+  dis[s] = 0, vis[s] = 1;
+  q.push(s);
+  while (!q.empty()) {
+    int u = q.front();
+    q.pop(), vis[u] = 0;
+    for (auto ed : e[u]) {
+      int v = ed.v, w = ed.w;
+      if (dis[v] > dis[u] + w) {
+        dis[v] = dis[u] + w;
+        cnt[v] = cnt[u] + 1;  // 记录最短路经过的边数
+        if (cnt[v] >= n) return false;
+        // 在不经过负环的情况下，最短路至多经过 n - 1 条边
+        // 因此如果经过了多于 n 条边，一定说明经过了负环
+        if (!vis[v]) q.push(v), vis[v] = 1;
+      }
+    }
+  }
+  return true;
 }
 ```
 
