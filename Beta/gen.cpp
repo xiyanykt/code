@@ -18,8 +18,9 @@ auto main() ->int32_t {
 	std::ios::sync_with_stdio(false);
 	std::cin.tie(nullptr);
 
-	std::cout << 1 << '\n';
-    constexpr int W = 1E3;
-    std::cout << rand(1, W) << ' ' << rand(1, W) << '\n';
-    return 0;
+	std::cout << 10 << '\n';
+	for (int i = 1; i <= 10; i += 1) {
+		std::cout << "0123456789"[rand(0, 9)];
+	}
+	return 0;
 }

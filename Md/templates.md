@@ -2877,7 +2877,30 @@ $$
 
 每个状态 $i$ 对应的子串数量是 $\text{len}(i) - \text{len}(link(i))$（根节点例外）。注意到 $link(i)$ 对应的字符串是 $i$ 对应的字符串的一个后缀，这些子串就是 $i$ 对应字符串的所有后缀，去掉被父亲「抢掉」的那部分，即 $link(i)$​ 对应字符串的所有后缀。
 
-要求两个字符串的最长公共子串，对其中一个构建 $\text{SAM}$ ，另一个尝试匹配，遇到无法匹配的节点就往 $\text{fail}$ 去跳即可，等价于求所有前缀的最长公共后缀。
+要求两个字符串的最长公共子串，对其中一个构建 $\text{SAM}$ ，另一个尝试匹配，遇到无法匹配的节点就往 $\text{fail}$​ 去跳即可，等价于求所有前缀的最长公共后缀。
+
+**子树大小必须预处理，不能一边处理一边用**
+
+```cpp
+i64 ans = 0;
+auto dfs = [&](auto && self, int u) ->void {
+    for (int v : adj[u]) {
+        self(self, v);
+        f[u] += f[v];
+    }
+};
+dfs(dfs, 1);
+for (int i = 1; i < sam.size(); i += 1) {
+    for (int x = 0; x <= 8; x += 1) {
+        int p = sam.next(i, x), q = sam.next(i, x + 1);
+        while (p && q) {
+            ans += f[p] * f[q] * (sam.len(i) - sam.len(sam.link(i)));
+            p = sam.next(p, 9);
+            q = sam.next(q, 0);
+        }
+    }
+}
+```
 
 ```cpp
 #include<bits/stdc++.h>
@@ -6667,7 +6690,17 @@ $\sum_{u = 1}^{n} \binom{s_u}{k} = \sum_{s = 1}^{n}f_s\binom{s}{k} = \sum_{s = 1
 
 $\sum_{s = 1}^{n}F(s) \times G(s - k) = F(s) \times T(n - s + k)$
 
-$\text{ans}_k=\frac{1}{k!}[x^{n + k}]F(s) \times T(n - s + k)$
+$\text{ans}_k=\frac{1}{k!}[x^{n + k}]F(s) \times T(n - s + k)$​
+
+
+
+求长度为 $n$ 的字符串中恰好出现 $k$ 次 “bit” 的字符串数目：
+
+由于 "bit" 不会重叠，考虑整个 “bit” 作为一个特殊字符，则至少出现 $k$ 次的数目为 $F_k = \binom{n - 2k}{k}26^{n - 3k}$。
+
+根据容斥原理可得 $G_k = \sum_{j = k}^{n}(-1)^{j - k}\binom{j}{k}F_k$。
+
+显然为和差卷积的形式。
 
 ```cpp
 //怎么找一个质数的原根
@@ -8136,6 +8169,14 @@ auto main() ->int {
 ## 树上拓扑序计数
 
 $\text{cnt} = \frac{{n}!}{\prod_{u=1}^{n}size_{u}}$ 
+
+## 最小二乘法
+
+$\hat{k} = \frac{\sum x_iy_i-n\overline{x}\overline{y}}{\sum x_i^2-n\overline{x}^2}$​
+
+$\hat{b} = \overline{y} - \hat{k}$
+
+给定 $n$ 个点$(i, a_i)$，求直线 $l:y = kx + b$ 使得 $\sum(a_i - y_i)^2$ 最小。
 
 ## 容斥原理
 
