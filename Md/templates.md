@@ -1223,26 +1223,37 @@ struct Fenwick {
 
 ## DSU
 
+ 扩展域并查集可以实现在维护二分图过程中计算偶环个数
+
+```cpp
+if (dsu.same(u, v)) {
+    // 奇环
+    continue;
+} 
+if (dsu.merge(u + n, v) && dsu.merge(u, v + n)) {
+	// 维护二分图
+} else {
+    // 偶环
+    cnt ^= 1;
+}
+```
+
 ```cpp
 struct DSU {
 	std::vector<int>par, siz;
 	DSU() = default;
-	
 	DSU(int n): par(n + 1), siz(n + 1, 1) {
         std::iota(par.begin(), par.end(), 0);
     }
-
 	int find(int x) {
 		while (x != par[x]) {
 			x = par[x] = par[par[x]];
 		}
 		return x;
 	}
-
 	bool same(int x, int y) {
 		return find(x) == find(y);
 	}
-
 	bool merge(int x, int y) {
 		x = find(x), y = find(y);
 		if (x == y) {
@@ -1255,7 +1266,6 @@ struct DSU {
 		par[y] = x;
 		return true;
 	}
-
 	int size(int x) {
 		return siz[find(x)];
 	}
@@ -2558,6 +2568,15 @@ for (int i = 1; i <= N; i += 1) {
 }
 ```
 
+## warning
+
+```cpp
+// 这样才能正确统计子树大小
+for(int p : end) {
+    f[p] += 1;
+}
+```
+
 ## AhoCorasick
 
 $\text{fail}$​ 指向当前节点的最长真后缀。
@@ -3824,6 +3843,8 @@ std::vector<int> z_algorithm(const std::string& s) {
 ## SCC
 
 DAG可以求解最长路：拓扑排序之后dp即可
+
+$\text{functinoal \ graph}$: scc个数 $=$ $n - 环上的点 + 环的数量$
 
 ```cpp
 struct SCC {
@@ -5267,6 +5288,7 @@ auto main() ->int {
 
 # Point
 
+平面上一点到圆内随机一个点的欧几里得距离的期望为 $\frac{r^2}{2} + d^2$。
 $$
 在二维平面上，给定一组点 \ ((x_1, y_1), (x_2, y_2), \ldots, (x_n, y_n)\ )，它们的重心（或质心）可以通过以下公式计算：
 \\
@@ -6073,6 +6095,166 @@ P v1 = rotate(p[j] - p[i]);
 P v2 = rotate(p[k] - p[i]);
 P o = lineIntersection(L(m1, m1 + v1), L(m2, m2 + v2));
 ```
+
+## minkowskisum
+
+```cpp
+Point sa = a[0], sb = b[0];
+for (int i = 0; i < n; i++) {
+    if (a[i].y() < sa.y() || (a[i].y() == sa.y() && a[i].x() < sa.x())) {
+        sa = a[i];
+    }
+}
+for (int i = 0; i < m; i++) {
+    if (b[i].y() < sb.y() || (b[i].y() == sb.y() && b[i].x() < sb.x())) {
+        sb = b[i];
+    }
+}
+auto s = sa + sb;
+std::vector<Point> d(n + m);
+for (int i = 0; i < n; i++) {
+    d[i] = a[(i + 1) % n] - a[i];
+}
+for (int i = 0; i < m; i++) {
+    d[n + i] = b[(i + 1) % m] - b[i];
+}
+std::sort(d.begin(), d.end(), [&](Point a, Point b) {
+    if (sgn(a) != sgn(b)) {
+        return sgn(a) == 1;
+    }
+    return cross(a, b) > 0;
+});
+std::vector<Point> c(n + m);
+c[0] = s;
+for (int i = 0; i < n + m - 1; i++) {
+    c[i + 1] = c[i] + d[i];
+}
+```
+
+选中一些$P(a - b,c-d)$，使得它们的和的模长最大。
+
+```cpp
+auto main() ->int {
+    int n;
+    std::cin >> n;
+    std::vector<std::vector<P>>p;
+    for (int i = 1; i <= n; i += 1) {
+        i64 a, b, c, d;
+        std::cin >> a >> b >> c >> d;
+        if (a == b && c == d) {
+            continue;
+        }
+        p.push_back({P(), P(a - b, c - d)});
+    }
+    if (p.empty()) {
+        std::cout << 0 << '\n';
+        return 0;
+    }
+    n = p.size();
+    auto dfs = [&](this auto && dfs, int l, int r) ->std::vector<P> {
+        if (l == r) {
+            return p[l];
+        }
+        int mid = (l + r) >> 1;
+        auto a = dfs(l, mid), b = dfs(mid + 1, r);
+        return minkowskisum(a, b);
+    };
+    auto r = dfs(0, n - 1);
+    i128 h = 0;
+    for (const auto & c : r) {
+        chmax(h, i128(c.x) * c.x + i128(c.y) * c.y);
+    }
+    std::cout << h << '\n';
+    return 0;
+}
+```
+
+给两个凸包，第二个移动$(dx,dy)$，判断二者有没有交集。
+
+```cpp
+auto main() ->int {
+    int n, m, q;
+    std::cin >> n >> m >> q;
+    std::vector<P>a(n), b(m);
+    for (auto &e : a) {
+        std::cin >> e;
+    }
+    for (auto &e : b) {
+        std::cin >> e;
+        e *= -1;
+    }
+    a = getHull(a), b = getHull(b);
+    auto c = minkowskisum(a, b);
+    std::sort(c.begin(), c.end());
+    P p = c[0];
+    for (int i = 1; i < c.size(); i += 1) {
+        c[i] -= p;
+    }
+    std::sort(c.begin() + 1, c.end(), [&](const auto & u, const auto & v) {
+        return compute(u, v);
+    });
+    while (q--) {
+        int dx, dy;
+        std::cin >> dx >> dy;
+        P x = P(dx, dy) - p;
+        if (cross(c.back(), x) > 0 || cross(x, c[1]) > 0) {
+            std::cout << 0 << '\n';
+            continue;
+        }
+        int i = std::lower_bound(c.begin() + 1, c.end(), x, [&](const auto & u, const auto & v) {
+            return compute(u, v);
+        }) - c.begin();
+        if (i == c.size() || i == 1) {
+            std::cout << 0 << '\n';
+            continue;
+        }
+        int j = (i - 1 + c.size()) % c.size();
+        std::cout << (cross(c[j] - x, c[i] - x) >= 0) << '\n';
+    }
+    return 0;
+}
+```
+
+两个凸包移动，求碰撞的时刻：
+
+转为相对移动速度，$p1$静止，$p2$以$v = (dx2 - dx1,dy2 - dy1)$移动。
+
+即求$Line(P(0, 0), v)$和凸包$r = p1 + (-p2)$的交点
+
+```cpp
+bool ok = true;
+for (int i = 0; i < r.size(); i += 1) {
+    if (cross(r[i], r[(i + 1) % r.size()]) < 0) {
+        ok = false;
+    }
+}
+if (ok) {
+    std::cout << 0 << '\n';
+    return 0;
+}
+if (v == Point<double>(0, 0)) {
+    std::cout << -1 << '\n';
+    return 0;
+}
+double ans = std::numeric_limits<double>::infinity();
+for (int i = 0; i < r.size(); i += 1) {
+    Point<double> a = r[i], b = r[(i + 1) % r.size()];
+    if (cross(b - a, v) == 0) {
+        continue;
+    }
+    auto p = lineIntersection(L(P(0, 0), v), L(a, b));
+    if (dot(v, p) >= 0 && dot(p - a, b - a) >= 0 && dot(p - b, a - b) >= 0) {
+        chmin(ans, std::sqrt(square(p) / square(v)));
+    }
+}
+if (ans > 1e18) {
+    std::cout << -1 << '\n';
+} else {
+    std::cout << ans << '\n';
+}
+```
+
+
 
 ## heltion
 
@@ -7888,6 +8070,7 @@ int inverse(int a, int m) {
     }
     return x < 0 ? x + m : x;
 }
+// CRT
 int solveModuloEquations(const std::vector<std::pair<int, int>> &e) {
     int m = 1;
     for (std::size_t i = 0; i < e.size(); i++) {
