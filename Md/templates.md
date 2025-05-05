@@ -2894,7 +2894,9 @@ $$
 
 这条性质把字符串所有前缀组成了一棵树，且有许多符合直觉的树的性质。例如，$s[1...i]$ 和  $s[1...j]$ 的最长公共后缀对应的字符串就是 $v_i$ 和$v_j$ 对应的 LCA 的字符串。实际上，这棵树与将字符串 ![S](data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7) 翻转后得到字符串的压缩后缀树结构相同。
 
-每个状态 $i$ 对应的子串数量是 $\text{len}(i) - \text{len}(link(i))$（根节点例外）。注意到 $link(i)$ 对应的字符串是 $i$ 对应的字符串的一个后缀，这些子串就是 $i$ 对应字符串的所有后缀，去掉被父亲「抢掉」的那部分，即 $link(i)$​ 对应字符串的所有后缀。
+每个状态 $i$ 对应的子串数量是 $\text{len}(i) - \text{len}(link(i))$（根节点例外）。注意到 $link(i)$ 对应的字符串是 $i$ 对应的字符串的一个后缀，这些子串就是 $i$ 对应字符串的所有后缀，去掉被父亲「抢掉」的那部分，即 $link(i)$​​ 对应字符串的所有后缀。
+
+![SAM](W:\v\Md\SAM.png)
 
 要求两个字符串的最长公共子串，对其中一个构建 $\text{SAM}$ ，另一个尝试匹配，遇到无法匹配的节点就往 $\text{fail}$​ 去跳即可，等价于求所有前缀的最长公共后缀。
 
@@ -2922,8 +2924,6 @@ for (int i = 1; i < sam.size(); i += 1) {
 ```
 
 ```cpp
-#include<bits/stdc++.h>
-using i64 = long long;
 struct SAM {
     static constexpr int ALPHABET = 26;
     struct Node {
@@ -3269,15 +3269,122 @@ while (q--) {
 }
 ```
 
+Given two strings $S_1$ and $S_2$ of equal length (indexed from $1$).
+
+ Now you need to answer $q$ queries, with each query consists of a string $T$. The query asks how many triplets of integers $(i, j, k)\ (1\le i \le j < k\le |S_1|)$ satisfy the condition $S_1[i,j]+S_2[j+1,k]=T$​. 
+
+由于  $T = s_1[i,j] + s_2[j+1,k],$那枚举 $T$ 的这个分界点 $p$。提前对 $s_1$ 的正串和 $s_2$ 的反串各自建两个 SAM，那么把 $T[1,p]$ 放到 $s_1$ 的 SAM 上去跑，跑到节点 $u$，那么合法的 $j$ 一定在 $\mathrm{endpos}(u)$ 中；同理，把 $T[p+1,\mathrm{len}]$ 放到 $s_2$ 的反串 SAM 上去跑，也能得到相应的节点与 $\mathrm{endpos}$ 集合。
+
+问题就转化为：在两个 SAM 的 link 树中，每次询问一对 $(u,v)$，求两个 SAM 中的子树“颜色集合”（即 $\mathrm{endpos}$ 集合）的交集大小。由于每个位置只会出现一次颜色，所以可以看每种颜色对这个询问的贡献。设颜色 $i$ 在两个 SAM 上节点分别是 $x_i, y_i$，那么对于一个询问 $(u,v)$，若 $x_i$ 在 $u$ 子树中且 $y_i$ 在 $v$ 子树中就有一个贡献。转化为 *parent tree* 树上的 DFS 序，就有
+```text
+dfn_{x_i} ∈ [dfn_u, dfn_u + siz_u - 1]
+∧
+dfn_{y_i} ∈ [dfn_v, dfn_v + siz_v - 1].
+```
+
+离线二维数点即可。
+
+```cpp
+SAM(const std::string& s) {
+    int p = 1;
+    end = {};
+    for (char c : s) {
+        p = extend(p, c - 'a');
+        end.push_back(p);
+    }
+    adj.assign(size(), {});
+    for (int i = 2; i < size(); i += 1) {
+        adj[link(i)].push_back(i);
+    }
+    dfn = 0;
+    auto dfs = [&](auto && self, int u) ->void {
+        lo[u] = ++dfn;
+        for (int v : adj[u]) {
+            self(self, v);
+        }
+        hi[u] = dfn;
+    };
+    dfs(dfs, 1);
+}
+auto work(const std::string& t) {
+    int p = 1;
+    std::vector<int>r(t.size(), -1);
+    for (int i = 0; i < t.size(); i += 1) {
+        p = next(p, t[i] - 'a');
+        if (!p) {
+            break;
+        }
+        r[i] = p;
+    }
+    return r;
+}
+auto main() ->int {
+    std::string s1, s2;
+    std::cin >> s1 >> s2;
+    auto sam1 = SAM(s1);
+    std::reverse(s2.begin(), s2.end());
+    auto sam2 = SAM(s2);
+
+    int n = s1.size();
+    std::vector<std::vector<int>>e(sam1.size());
+    for (int i = 0; i + 1 < n; i += 1) {
+        int u1 = sam1.end[i];
+        int u2 = sam2.end[n - i - 2];
+        // 合法的子树交
+        e[sam1.lo[u1]].push_back(sam2.lo[u2]);
+    }
+
+    int q;
+    std::cin >> q;
+    std::vector<std::vector<std::array<int, 3>>>g(sam1.size());
+    for (int c = 1; c <= q; c += 1) {
+        std::string t;
+        std::cin >> t;
+        auto ends1 = sam1.work(t);
+        std::reverse(t.begin(), t.end());
+        auto ends2 = sam2.work(t);
+        for (int i = 0; i + 1 < t.size(); i += 1) {
+            if (ends1[i] == -1 || ends2[t.size() - i - 2] == -1) {
+                continue;
+            }
+            int l1 = sam1.lo[ends1[i]], r1 = sam1.hi[ends1[i]];
+            int l2 = sam2.lo[ends2[t.size() - i - 2]], r2 = sam2.hi[ends2[t.size() - i - 2]];
+            // 转为二维前缀和问题
+            g[r1].push_back({r2, 1, c});
+            g[r1].push_back({l2 - 1, -1, c});
+            g[l1 - 1].push_back({l2 - 1, 1, c});
+            g[l1 - 1].push_back({r2, -1, c});
+        }
+    }
+    std::vector<i64>res(q + 1);
+    Fenwick<i64>fen(sam2.size());
+    for (int i = 0; i < sam1.size(); i += 1) {
+        for (int y : e[i]) {
+            fen.add(y, 1);
+        }
+        for (auto [v, coef, q] : g[i]) {
+            res[q] += fen.sum(v) * coef;
+        }
+    }
+
+    for (int i = 1; i <= q; i += 1) {
+        std::cout << res[i] << '\n';
+    }
+    return 0;
+}
+```
+
 ## PAM
 
-### 本质不同的回文串数
+对于回文串 $S$ 来说，显然它的回文前后缀都等价于它的 $\text{border}$.
 
-根据回文自动机的状态定义可知，所求即为回文自动机的状态数
+对于 $\text{Palindrome Automaton}$：
 
-### 求回文子串的出现次数
+每个节点表示一个回文子串 $len(u) = |s_u|$
 
-利用 $fail$​ 指针构建出回文树向父节点转移即可
+$\text{link}(u)$表示 $u$ 真最长回文后缀，即 $s_{link(u)}$是$s_u$的最大 $\text{border}$​。
+
+根据前缀函数的证明，$len(u) - len(link(u))$是 $s_u$的最短压缩（前提是$len(u)$能被整除，否则$s_u$的最短压缩为 $len(u)$）。
 
 ```cpp
 //rooted in zero
@@ -3500,7 +3607,9 @@ $\pi$​ :前缀的border  用来处理border问题时相当有用。
 
 $f_{i} 表示前缀 s_{1...i}的 \text{border}$。
 
-$一个字符串的\text{border}表示最大的 \text{len} 满足S_{1...len}==S_{n-len + 1...n}$。
+$一个字符串的\text{border}表示最大的 \text{len} 满足S_{1...len}==S_{n-len + 1...n}$​。
+
+$\pi_{n - 1}$ 是 $s$ 的最长 $\text{border}$ ，$n - \pi_{n - 1}$是 $s$ 的最短周期
 
 ```cpp
 std::vector<int> kmp(std::string s) {
@@ -3514,6 +3623,9 @@ std::vector<int> kmp(std::string s) {
         f[i + 1] = j;
     }
     return f;
+}
+for (int i = 1; i <= n; i += 1) {
+    g[i] = g[f[i]] + w[i];
 }
 ```
 
@@ -6934,16 +7046,6 @@ $\sum_{s = 1}^{n}F(s) \times G(s - k) = F(s) \times T(n - s + k)$
 
 $\text{ans}_k=\frac{1}{k!}[x^{n + k}]F(s) \times T(n - s + k)$​
 
-
-
-求长度为 $n$ 的字符串中恰好出现 $k$ 次 “bit” 的字符串数目：
-
-由于 "bit" 不会重叠，考虑整个 “bit” 作为一个特殊字符，则至少出现 $k$ 次的数目为 $F_k = \binom{n - 2k}{k}26^{n - 3k}$。
-
-根据容斥原理可得 $G_k = \sum_{j = k}^{n}(-1)^{j - k}\binom{j}{k}F_k$。
-
-显然为和差卷积的形式。
-
 ```cpp
 //怎么找一个质数的原根
 auto factorize(int x) {
@@ -7571,6 +7673,28 @@ for (int i = 1; i <= m; i += 1) {
     std::cout << r[i] << '\n';
 }
 ```
+
+### 二项式反演
+
+求长度为 $n$ 的字符串中恰好出现 $k$ 次 “bit” 的字符串数目：
+
+由于 "bit" 不会重叠，考虑整个 “bit” 作为一个特殊字符，则至少出现 $k$ 次的数目为 $F_k = \binom{n - 2k}{k}26^{n - 3k}$。
+
+根据容斥原理可得 $G_k = \sum_{j = k}^{n}(-1)^{j - k}\binom{j}{k}F_k$。
+
+显然为和差卷积的形式。
+
+$n$个人以相同概率选择自己之外的一名玩家并射击，击中的概率为 $p$ ，被击中者死亡。求恰好有 $k$ 人存活的概率。
+
+$F(k)$ 表示恰好杀死 $k$ 人的概率，$G(k)$表示杀死不超过 $k$ 人的概率。
+
+$F(k) = \binom{n}{k}\sum_{i = 0}^{k}(-1)^{k - i}\binom{k}{i}G(i)$
+
+$G(i) = (1 - p + p \frac{i}{n - 1})^{n-i}(1-p+p\frac{i-1}{n-1})^i$
+
+被击中的 $i$ 个人要么没打中，要么打中其他的 $i - 1$ 个人。
+
+不被击中的 $n - i$ 个人要么没打中，要么打中 $i$ 个人中的一个。
 
 ## Matrix
 
