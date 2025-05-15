@@ -169,6 +169,53 @@ struct SegmentTree {
         return res == l - 1 ? -1 : res;
     }
 };
+// 整体二分
+auto findFirst = [&](std::vector<int> d, int x) {
+    // findFirst in [1, x]
+    auto dfs = [&](auto &&self, int p, int l, int r, std::vector<int> d) {
+        int sum = 0;
+        for (int c: d) {
+            sum += ::t[c].cnt;
+        }
+        if (sum == r - l + 1) {
+            return l;
+        }
+        if (l == r) {
+            return r + 1;
+        }
+        int mid = (l + r) >> 1;
+        if (x <= mid) {
+            return self(self, p << 1, l, mid, lsh(d));
+        } else {
+            int res = self(self, p << 1 | 1, mid + 1, r, rsh(d));
+            return res == mid + 1 ? self(self, p << 1, l, mid, lsh(d)) : res;
+        }
+    };
+    return dfs(dfs, 1, 1, n, d);
+};
+auto findLast = [&](std::vector<int> d, int x) {
+    // findLast in [x, n]
+    auto dfs = [&](auto &&self, int p, int l, int r, std::vector<int> d) {
+        int sum = 0;
+        for (int c: d) {
+            sum += ::t[c].cnt;
+        }
+        if (sum == r - l + 1) {
+            return r;
+        }
+        if (l == r) {
+            return l - 1;
+        }
+        int mid = (l + r) >> 1;
+        if (mid + 1 <= x) {
+            return self(self, p << 1 | 1, mid + 1, r, rsh(d));
+        } else {
+            int res = self(self, p << 1, l, mid, lsh(d));
+            return res == mid ? self(self, p << 1 | 1, mid + 1, r, rsh(d)) : res;
+        }
+    };
+    return dfs(dfs, 1, 1, n, d);
+};
 ```
 
 动态维护树的直径，保证边权为正，否则贪心不成立（依赖欧拉序实现贪心）
@@ -843,16 +890,12 @@ std::vector<int>query(int u1, int v1, int lca1, int par1, int u2, int v2, int lc
 }
 
 auto main() ->int32_t {
-    std::ios::sync_with_stdio(false);
-    std::cin.tie(nullptr);
     int n;
     std::cin >> n;
-
     std::vector<int>a(n + 1);
     for (int i = 1; i <= n; i += 1) {
         std::cin >> a[i];
     }
-
     std::vector<std::vector<int>>adj(n + 1);
     for (int i = 1; i <= n - 1; i += 1) {
         int u, v;
@@ -860,14 +903,12 @@ auto main() ->int32_t {
         adj[u].push_back(v);
         adj[v].push_back(u);
     }
-
     const u64 ub = 7894655413;
     std::vector<u64>pw(Kn + 1);
     pw[0] = 1;
     for (int i = 1; i <= Kn; i += 1) {
         pw[i] = mul(pw[i - 1], ub);
     }
-
     constexpr int Kl = 20;
     std::vector<int>d(n + 1), f(n + 1);
     std::vector<std::array<int, Kl>>par(n + 1);
@@ -2467,7 +2508,7 @@ struct Hash : public std::vector<u64> {
 };
 ```
 
-## 哈希神技
+###$\sum{len}\le M$
 
 给定一个文本串，要查询一个字符串集合里面的字符串在该模板串里面的出现次数。
 
@@ -3384,7 +3425,29 @@ auto main() ->int {
 
 $\text{link}(u)$表示 $u$ 真最长回文后缀，即 $s_{link(u)}$是$s_u$的最大 $\text{border}$​。
 
-根据前缀函数的证明，$len(u) - len(link(u))$是 $s_u$的最短压缩（前提是$len(u)$能被整除，否则$s_u$的最短压缩为 $len(u)$）。
+根据前缀函数的证明，$len(u) - len(link(u))$是 $s_u$的最短压缩（前提是$len(u)$能被整除，否则$s_u$的最短压缩为 $len(u)$​）。
+
+维护出现次数：
+
+```cpp
+std::vector<int>f(pam.size());
+for (int p : end) {
+    f[p] += 1;
+}
+auto dfs = [&](auto && self, int u) ->void {
+    for (int v : adj[u]) {
+        self(self, v);
+        f[u] += f[v];
+    }
+    ans += f[u] * __builtin_popcount(pam.t[u].msk);
+};
+```
+
+维护字符集:
+
+```cpp
+t[cur].msk = t[par].msk | (1 << (c - 'a'));
+```
 
 ```cpp
 //rooted in zero
@@ -5541,6 +5604,37 @@ auto main() ->int {
 ```
 
 ```cpp
+// P(a[i], 1), V(j, -s[j])
+// chmax(res, dot(P, V) + s[i] - a[i] * i)
+// s[i] - s[j] + a[i] * j - a[i] * i
+std::vector<Point>p;
+for (int j = 0; j <= n; j += 1) {
+    p.push_back(Point(j, -s[j]));
+}
+std::vector<Point>stk;
+for (auto a : p) {
+    while (stk.size() > 1 && cross(stk.end()[-2] - stk.back(), a - stk.back()) <= 0) {
+        stk.pop_back();
+    }
+    stk.push_back(a);
+}
+for (int i = 1; i <= n; i += 1) {
+    Point v(a[i], 1);
+    int lo = 0, hi = stk.size() - 2;
+    while (lo <= hi) {
+        int mid = (lo + hi) >> 1;
+        if (dot(v, stk[mid]) < dot(v, stk[mid + 1])) {
+            lo = mid + 1;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    chmax(res, dot(v, stk[lo]) + s[i] - 1LL * a[i] * i);
+}
+std::cout << ans + res << '\n';
+```
+
+```cpp
 template<class T>
 T dot(const Point<T> &a, const Point<T> &b) {
     return a.x * b.x + a.y * b.y;
@@ -7625,7 +7719,9 @@ $\ln (1+x) = \sum_{n = 1}^{\infin}(-1)^{n + 1}\frac{x^n}{n}, x \in (-1, 1]$
 
 $\ln(1-x) = -\sum_{n = 1}^{\infin}\frac{x^n}{n}, |x| < 1$
 
-$\frac{1}{1-x}=\sum_{n=0}^{\infin}x^n, |x| < 1$
+$\frac{1}{1-x}=\sum_{n=0}^{\infin}x^n, |x| < 1$​
+
+$\sum_{k=1}^{n}k^2=\frac{n(n + 1)(2n + 1)}{6}$
 
 $\arctan x = \sum_{n = 0}^{\infin}(-1)^n\frac{x^{2n + 1}}{2n + 1},x \in [-1, 1]$
 
@@ -7675,6 +7771,12 @@ for (int i = 1; i <= m; i += 1) {
 ```
 
 ### 二项式反演
+
+记 $f_n$ 表示恰好使用 $n$ 个不同元素形成特定结构的方案数，$g_n$ 表示从 $n$ 个不同元素中选出 $i \ge 0$ 个元素形成特定结构的方案数。
+
+$g_n = \sum_{i = 0}^{n}\binom{n}{i}f_i$
+
+$f_n = \sum_{i = 0}^{n}(-1)^{n - i}\binom{n}{i}g_i$
 
 求长度为 $n$ 的字符串中恰好出现 $k$ 次 “bit” 的字符串数目：
 
@@ -7776,8 +7878,6 @@ struct Info {
     }
 };
 ```
-
-
 
 ## MillerRabin and Rho1
 
@@ -7971,6 +8071,139 @@ i64 crt(int k, std::vector<i64>& a, std::vector<i64>& n) {
 }
 ```
 
+## gaussian elimination
+
+```cpp
+// ADD
+auto main() ->int {
+    int n;
+    std::cin >> n;
+    std::vector<std::vector<double>>f(n, std::vector<double>(n + 1));
+    for (int i = 0; i < n; i += 1) {
+        for (int j = 0; j <= n; j += 1) {
+            std::cin >> f[i][j];
+        }
+    }
+    constexpr double eps = 1e-9;
+    int r = 0;
+    std::vector<int>loc(n, -1);
+    for (int c = 0; c < n && r < n; c += 1) {
+        int sel = r;
+        for (int j = r; j < n; j += 1) {
+            if (std::abs(f[j][c]) > std::abs(f[sel][c])) {
+                sel = j;
+            }
+        }
+        if (std::abs(f[sel][c]) < eps) {
+            continue;
+        }
+        std::swap(f[sel], f[r]);
+        loc[c] = r;
+        for (int i = 0; i < n; i += 1) {
+            if (i != r) {
+                double d = f[i][c] / f[r][c];
+                for (int j = c; j <= n; j += 1) {
+                    f[i][j] -= d * f[r][j];
+                }
+            }
+        }
+        r += 1;
+    }
+    for (int i = 0; i < n; i += 1) {
+        double s = 0;
+        for (int j = 0; j < n; j += 1) {
+            if (loc[j] == -1) {
+                continue;
+            }
+            s += f[loc[j]].back() / f[loc[j]][j] * f[i][j]; 
+        }
+        if (std::abs(s - f[i].back()) > eps) {
+            std::cout << "-1\n";
+            std::exit(0);
+        }
+    }
+    if (std::count(loc.begin(), loc.end(), -1)) {
+        std::cout << "0\n";
+        std::exit(0);
+    }
+    for (int i = 0; i < n; i += 1) {
+        std::cout << std::fixed << std::setprecision(2) << 'x' << i + 1 << '=' << (f[loc[i]].back() / f[loc[i]][i]) << '\n';
+    }
+    return 0;
+}
+// XOR
+constexpr int N = 2000;
+auto main() ->int {
+    int n, m, p;
+    std::cin >> n >> m >> p;
+    std::vector<std::bitset<N + 1>>f(n);
+    for (int i = 0; i < n; i += 1) {
+        for (int j = 0; j < m; j += 1) {
+            int x;
+            std::cin >> x;
+            if (x) {
+                f[i].set(j);
+            }
+        }
+    }
+    for (int i = 0; i < n; i += 1) {
+        for (int j = 0; j < p; j += 1) {
+            int x;
+            std::cin >> x;
+            if (x) {
+                f[i].set(m + j);
+            }
+        }
+    }
+    std::vector<int>loc(m, -1);
+    int r = 0;
+    for (int c = 0; c < m && r < n; c += 1) {
+        int sel = r;
+        while (sel < n && !f[sel].test(c)) {
+            sel += 1;
+        }
+        if (sel == n) {
+            // 这一行没有主元，有无穷多解
+            continue;
+        }
+        std::swap(f[sel], f[r]);
+        loc[c] = r;
+        for (int i = 0; i < n; i += 1) {
+            if (i != r && f[i].test(c)) {
+                f[i] ^= f[r];
+            }
+        }
+        r += 1;
+    }
+    for (int i = r; i < n; i += 1) {
+        bool find = false;
+        for (int j = 0; j < m; j += 1) {
+            if (f[i].test(j)) {
+                find = true;
+                break;
+            }
+        }
+        if (!find) {
+            // 0 != 0, 无解
+            for (int j = m; j < m + p; j += 1) {
+                if (f[i].test(j)) {
+                    std::cout << "No\n";
+                    std::exit(0);
+                }
+            }
+        }
+    }
+    std::cout << "Yes\n";
+    for (int i = 0; i < m; i += 1) {
+        for (int j = 0; j < p; j += 1) {
+            std::cout << (loc[i] != -1 ? f[loc[i]].test(m + j) : 0) << ' ';
+        }
+        std::cout << '\n';
+    }
+    return 0;
+}
+```
+
 ## Block
 
 $$
@@ -8134,7 +8367,22 @@ $\text{Lucas}$:
 
 $\binom{n}{m} \mod 2=\binom{\lfloor \frac{n}{2} \rfloor}{\lfloor \frac{m}{2} \rfloor}\binom{n \mod 2}{m \mod 2}$ 
 
-考虑到 $\binom{0}{0} = 1,\binom{0}{1} = 0, \binom{1}{0} = 1, \binom{1}{1} = 1$，故 $\binom{n}{m} \equiv 1 \mod 2$ 当且仅当 $n | m == m$。
+考虑到 $\binom{0}{0} = 1,\binom{0}{1} = 0, \binom{1}{0} = 1, \binom{1}{1} = 1$，故 $\binom{n}{m} \equiv 1 \mod 2$ 当且仅当 $n | m == m$​。
+
+```cpp
+for (int i = 1; i <= n; i += 1) {
+    int cnt = 1;
+    for (int k = W; k >= 0; k -= 1) {
+        if (b[i] >> k & 1) {
+            cnt += 1 << __builtin_popcount(a[i] & ((1 << k) - 1));
+            if (~a[i] >> k & 1) {
+                cnt -= 1;
+                break;
+            }
+        }
+    }
+}
+```
 
 ```cpp
 binom[n][m] = fac[n] * ifac[m] * ifac[n - m];
@@ -9043,8 +9291,3 @@ auto dfs = [&](this auto && dfs, int l, int r) {
     merge(l, r);
 };
 ```
-
-
-
-
-
