@@ -3059,7 +3059,7 @@ auto main() ->int32_t {
 
 求解后缀的 $\text{LCP}$ 直接对反串构建 $\text{SAM}$ , 两个后缀的 $\text{LCP}$ 即为对应 $\text{SAM}$ 上的节点的的 $\text{LCA}$​ 。 
 
-因此传化为在虚树上DP的经典问题。
+因此转化为在虚树上DP的经典问题。
 
 ```cpp
 auto main() ->int32_t {
@@ -5463,6 +5463,16 @@ auto main() ->int {
 
 # Point
 
+不能使用$\text{std::acos}$，在边界范围会有严重的精度误差。
+
+一般使用$\text{std::atan}$替代，这个函数的边界效应不明显。
+
+$\tan{\theta} = \frac{\sin{\theta}}{\cos{\theta}} = \frac{\vec{p}\times\vec{s}}{\vec{p} \cdot \vec{s}}$
+
+二维向量：$\theta=\text{std::atan2(std::abs(cross($\vec{p}$,$\vec{s}$)),dot($\vec{p}$,$\vec{s}$))}$
+
+三维向量：$\theta=\text{std::atan2(std::abs(length(cross($\vec{p}$,$\vec{s}$))),dot($\vec{p}$,$\vec{s}$))}$
+
 平面上一点到圆内随机一个点的欧几里得距离的期望为 $\frac{r^2}{2} + d^2$。
 $$
 在二维平面上，给定一组点 \ ((x_1, y_1), (x_2, y_2), \ldots, (x_n, y_n)\ )，它们的重心（或质心）可以通过以下公式计算：
@@ -5478,7 +5488,7 @@ $$
 
 给定一个随机点集，它的凸包的期望顶点数为 $\log_2{n}$​。
 
-给定 *n* 个二维向量 ($x_i$, $y_i$)，从中选择若干个，使得所选的向量之和的模长最大。
+给定 *n* 个二维向量 ($x_i$, $y_i$)，从中选择若干个，使得所选的向量之和的模长最大。**
 
 ```cpp
 std::vector<std::vector<P>> p;
@@ -6459,8 +6469,6 @@ if (ans > 1e18) {
     std::cout << ans << '\n';
 }
 ```
-
-
 
 ## heltion
 
