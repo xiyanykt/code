@@ -3687,6 +3687,7 @@ std::vector<int> kmp(std::string s) {
     }
     return f;
 }
+// kmp存在一些常见的容斥形式
 for (int i = 1; i <= n; i += 1) {
     g[i] = g[f[i]] + w[i];
 }
@@ -5471,7 +5472,9 @@ $\tan{\theta} = \frac{\sin{\theta}}{\cos{\theta}} = \frac{\vec{p}\times\vec{s}}{
 
 二维向量：$\theta=\text{std::atan2(std::abs(cross($\vec{p}$,$\vec{s}$)),dot($\vec{p}$,$\vec{s}$))}$
 
-三维向量：$\theta=\text{std::atan2(std::abs(length(cross($\vec{p}$,$\vec{s}$))),dot($\vec{p}$,$\vec{s}$))}$
+三维向量：$\theta=\text{std::atan2(std::abs(length(cross($\vec{p}$,$\vec{s}$))),dot($\vec{p}$,$\vec{s}$))}$​
+
+$\cos A = \frac{b^2 + c^2 - a^2}{2bc}$ 
 
 平面上一点到圆内随机一个点的欧几里得距离的期望为 $\frac{r^2}{2} + d^2$。
 $$
@@ -5488,7 +5491,7 @@ $$
 
 给定一个随机点集，它的凸包的期望顶点数为 $\log_2{n}$​。
 
-给定 *n* 个二维向量 ($x_i$, $y_i$)，从中选择若干个，使得所选的向量之和的模长最大。**
+给定 *n* 个二维向量 ($x_i$, $y_i$)，从中选择若干个，使得所选的向量之和的模长最大。
 
 ```cpp
 std::vector<std::vector<P>> p;

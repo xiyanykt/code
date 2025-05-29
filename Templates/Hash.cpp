@@ -20,7 +20,7 @@ static constexpr u64 mul(u64 a, u64 b) {
 }
 
 std::vector<u64>pw{1};
-u64 htt = rand(Mod / 3, Mod / 2);
+static u64 Bas = rand(Mod / 5, Mod / 2);
 
 struct Hash : public std::vector<u64> {
     Hash() = default;
@@ -28,10 +28,10 @@ struct Hash : public std::vector<u64> {
         int n = s.size();
         this->resize(n + 1);
         while (int(pw.size()) <= n) {
-            pw.push_back(mul(pw.back(), htt));
+            pw.push_back(mul(pw.back(), Bas));
         }
         for (int i = 1; i <= n; i += 1) {
-            this->at(i) = add(mul(this->at(i - 1), htt), int(s[i - 1]));
+            this->at(i) = add(mul(this->at(i - 1), Bas), int(s[i - 1]));
         }
     }
 
