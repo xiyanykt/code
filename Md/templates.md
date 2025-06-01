@@ -1510,6 +1510,36 @@ if (x == root) {
 }
 ```
 
+对于编号$[l, r]$的点，它们的 $\text{lca}：$，记 $x为区间 \text{dfn}最小的点，y为区间\text{dfn}最大的点$，所求即为 $\text{lca}(x,y)$。
+
+```cpp
+// seg -> [min, max]
+auto pre = SegmentTree<std::pair<int, int>, f, e>(n + 1);
+auto suf = SegmentTree<std::pair<int, int>, f, e>(n + 1);
+for (int i = 1; i <= n; i += 1) {
+    suf.set(i, {hld.left(i), hld.left(i)});
+}
+std::vector<int>ans(q + 1);
+for (int i = 1; i <= n; i += 1) {
+    // 按 dfn 离线
+    for (auto [l, r, e] : qry[i]) {
+        auto [a, b] = pre.product(l, r + 1);
+        auto [c, d] = suf.product(l, r + 1);
+        if (b != -1 && d != -1) {
+            int x = hld.lca(hld.seq[a], hld.seq[b], hld.seq[i]);
+            int y = hld.lca(hld.seq[c], hld.seq[d], hld.seq[i]);
+            ans[e] = hld.lca(x, y, hld.seq[i]);
+        } else if (b != -1) {
+            ans[e] = hld.lca(hld.seq[a], hld.seq[b], hld.seq[i]);
+        } else {
+            ans[e] = hld.lca(hld.seq[c], hld.seq[d], hld.seq[i]);
+        }
+    }
+    pre.set(hld.seq[i], {i, i});
+    suf.set(hld.seq[i], e());
+}
+```
+
 树剖结合线段树也可以维护一些矩阵类信息，如最大子段和之类的。
 
 但是因为矩阵不满足交换律，记录答案时候的顺序会直接影响求解的答案。
@@ -1546,8 +1576,6 @@ struct HLD {
     std::vector<std::vector<int>>adj;
     std::vector<int>dfn, siz, par, son, top, dep, seq;
     int cur;
-    HLD() {}
-    
     HLD(int n) {
         this->n = n;
         adj.assign(n + 1, std::vector<int>());
