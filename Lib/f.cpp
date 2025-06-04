@@ -14,265 +14,188 @@ using f128 = __float128;
 #define debug(...) (void)13
 #endif
 
-template<class T>
-constexpr bool chmax (T& x, T y) {
-    if (y > x) {
-        x = y;
-        return true;
-    }
-    return false;
-}
-
-template<class T>
-constexpr bool chmin (T& x, T y) {
-    if (y < x) {
-        x = y;
-        return true;
-    }
-    return false;
-}
-
-static struct FastInput {
-    static constexpr int BUF_SIZE = 1 << 20;
-    char buf[BUF_SIZE];
-    size_t chars_read = 0;
-    size_t buf_pos = 0;
-    FILE *in = stdin;
-    char cur = 0;
- 
-    inline char get_char() {
-        if (buf_pos >= chars_read) {
-            chars_read = fread(buf, 1, BUF_SIZE, in);
-            buf_pos = 0;
-            buf[0] = (chars_read == 0 ? -1 : buf[0]);
-        }
-        return cur = buf[buf_pos++];
-    }
- 
-    inline void tie(int) {
-        
-    }
- 
-    inline explicit operator bool() {
-        return cur != -1;
-    }
- 
-    inline static bool is_blank(char c) {
-        return c <= ' ';
-    }
- 
-    inline bool skip_blanks() {
-        while (is_blank(cur) && cur != -1) {
-            get_char();
-        }
-        return cur != -1;
-    }
- 
-    inline FastInput& operator>>(char& c) {
-        skip_blanks();
-        c = cur;
-        return *this;
-    }
- 
-    inline FastInput& operator>>(std::string& s) {
-        if (skip_blanks()) {
-            s.clear();
-            do {
-                s += cur;
-            } while (!is_blank(get_char()));
-        }
-        return *this;
-    }
- 
-    template <typename T>
-    inline FastInput& read_integer(T& n) {
-        // unsafe, doesn't check that characters are actually digits
-        n = 0;
-        if (skip_blanks()) {
-            int sign = +1;
-            if (cur == '-') {
-                sign = -1;
-                get_char();
-            }
-            do {
-                n += n + (n << 3) + cur - '0';
-            } while (!is_blank(get_char()));
-            n *= sign;
-        }
-        return *this;
-    }
- 
-    template <typename T>
-    inline typename std::enable_if<std::is_integral<T>::value, FastInput&>::type operator>>(T& n) {
-        return read_integer(n);
-    }
- 
-#if !defined(_WIN32) || defined(_WIN64)
-    inline FastInput& operator>>(__int128& n) {
-        return read_integer(n);
-    }
-#endif
- 
-    template <typename T>
-    inline typename std::enable_if<std::is_floating_point<T>::value, FastInput&>::type operator>>(T& n) {
-        // not sure if really fast, for compatibility only
-        n = 0;
-        if (skip_blanks()) {
-            std::string s;
-            (*this) >> s;
-            sscanf(s.c_str(), "%lf", &n);
-        }
-        return *this;
-    }
-} fast_input;
- 
-static struct FastOutput {
-    static constexpr int BUF_SIZE = 1 << 20;
-    char buf[BUF_SIZE];
-    size_t buf_pos = 0;
-    static constexpr int TMP_SIZE = 1 << 20;
-    char tmp[TMP_SIZE];
-    FILE *out = stdout;
- 
-    inline void put_char(char c) {
-        buf[buf_pos++] = c;
-        if (buf_pos == BUF_SIZE) {
-            fwrite(buf, 1, buf_pos, out);
-            buf_pos = 0;
-        }
-    }
- 
-    ~FastOutput() {
-        fwrite(buf, 1, buf_pos, out);
-    }
- 
-    inline FastOutput& operator<<(char c) {
-        put_char(c);
-        return *this;
-    }
- 
-    inline FastOutput& operator<<(const char* s) {
-        while (*s) {
-            put_char(*s++);
-        }
-        return *this;
-    }
- 
-    inline FastOutput& operator<<(const std::string& s) {
-        for (int i = 0; i < (int) s.size(); i++) {
-            put_char(s[i]);
-        }
-        return *this;
-    }
- 
-    template <typename T>
-    inline char* integer_to_string(T n) {
-        // beware of TMP_SIZE
-        char* p = tmp + TMP_SIZE - 1;
-        if (n == 0) {
-            *--p = '0';
-        } else {
-            bool is_negative = false;
-            if (n < 0) {
-                is_negative = true;
-                n = -n;
-            }
-            while (n > 0) {
-                *--p = (char) ('0' + n % 10);
-                n /= 10;
-            }
-            if (is_negative) {
-                *--p = '-';
-            }
-        }
-        return p;
-    }
- 
-    template <typename T>
-    inline typename std::enable_if<std::is_integral<T>::value, char*>::type stringify(T n) {
-        return integer_to_string(n);
-    }
- 
-#if !defined(_WIN32) || defined(_WIN64)
-    inline char* stringify(__int128 n) {
-        return integer_to_string(n);
-    }
-#endif
- 
-    template <typename T>
-    inline typename std::enable_if<std::is_floating_point<T>::value, char*>::type stringify(T n) {
-        sprintf(tmp, "%.17f", n);
-        return tmp;
-    }
- 
-    template <typename T>
-    inline FastOutput& operator<<(const T& n) {
-        auto p = stringify(n);
-        for (; *p != 0; p++) {
-            put_char(*p);
-        }
-        return *this;
-    }
-} fast_output;
-
-auto main() ->int {
-    std::ios::sync_with_stdio(false);
-    // std::cin.tie(nullptr);
+template<class Info, class Tag>
+requires requires(Info info, Tag tag) {info.apply(tag); tag.apply(tag);}
+struct LazySegmentTree {
     int n;
-    fast_input >> n;
+    std::vector<Info>info;
+    std::vector<Tag>tag;
+
+    LazySegmentTree() = default;
+    LazySegmentTree(int n): n{n}, info(4 << std::__lg(n), Info()), tag(4 << std::__lg(n), Tag()) {}
+
+    LazySegmentTree (const std::vector<Info> & a) {
+        int n = a.size() - 1;
+        this->n = n;
+        info.assign(4 << std::__lg(n), Info());
+        tag.assign(4 << std::__lg(n), Tag());
+        auto work = [&](auto && self, int p, int l, int r) {
+            if (l == r) {
+                info[p] = Info(a[l]);
+                return;
+            }
+            int mid = (l + r) >> 1;
+            self(self, p << 1, l, mid), self(self, p << 1 | 1, mid + 1, r);
+            info[p] = info[p << 1] + info[p << 1 | 1];
+        };
+        work(work, 1, 1, n);
+    }
+
+    void apply(int p, const Tag& v) {
+        info[p].apply(v), tag[p].apply(v);
+    }
+
+    void pull(int p) {
+        apply(p << 1, tag[p]), apply(p << 1 | 1, tag[p]);
+        tag[p] = Tag();
+    }
+
+    void modify(int p, int l, int r, int L, int R, const Info& v) {
+        if (l > R or r < L) {
+            return;
+        }
+        if (L <= l and r <= R) {
+            info[p] = v;
+            return;
+        }
+        pull(p);
+        int mid = (l + r) >> 1;
+        modify(p << 1, l, mid, L, R, v), modify(p << 1 | 1, mid + 1, r, L, R, v);
+        info[p] = info[p << 1] + info[p << 1 | 1];
+    }
+
+    void modify(int p, const Info& v) {
+        modify(1, 1, n, p, p, v);
+    }
+
+    Info rangeQuery(int p, int l, int r, int L, int R) {
+        if (l > R or r < L) {
+            return Info();
+        }
+        if (L <= l and r <= R) {
+            return info[p];
+        }
+        pull(p);
+        int mid = (l + r) >> 1;
+        return rangeQuery(p << 1, l, mid, L, R) + rangeQuery(p << 1 | 1, mid + 1, r, L, R);
+    }
+
+    Info rangeQuery(int l, int r) {
+        return rangeQuery(1, 1, n, l, r);
+    }
+
+    void rangeApply(int p, int l, int r, int L, int R, const Tag& v) {
+        if (l > R or r < L) {
+            return;
+        }
+        if (L <= l and r <= R) {
+            apply(p, v);
+            return;
+        }
+        pull(p);
+        int mid = (l + r) >> 1;
+        rangeApply(p << 1, l, mid, L, R, v), rangeApply(p << 1 | 1, mid + 1, r, L, R, v);
+        info[p] = info[p << 1] + info[p << 1 | 1];
+    }
+
+    void rangeApply(int l, int r, const Tag& v) {
+        rangeApply(1, 1, n, l, r, v);
+    }
+};
+
+struct Tag {
+    int add = 0;
+    void apply(Tag t) {
+        add += t.add;
+    }
+};
+
+struct Info {
+    int v = 0;
+    int p = 0;
+    void apply(Tag t) {
+        v += t.add;
+    }
+
+    friend Info operator+(Info a, Info b) {
+        return a.v >= b.v ? a : b;
+    }
+};
+
+struct Node {
+    int l = 0, r = 0;
+    mutable int c = 0;
+    Node(int l, int r, int c): l{l}, r{r}, c{c} {}
+
+    friend std::strong_ordering operator<=>(Node lsh, Node rsh) {
+        return lsh.l <=> rsh.l;
+    }
+};
+
+void solve () {
+    int n, m;
+    std::cin >> n >> m;
 
     std::vector<int>a(n + 1);
     for (int i = 1; i <= n; i += 1) {
-        fast_input >> a[i];
+        std::cin >> a[i];
+        a[i] -= i;
     }
 
-    int w = std::ranges::max(a);
-    constexpr int N = 21;
-    std::vector<std::vector<int>>stk(w + 2);
-    std::vector<std::array<int, N>>f(n + 1);
-    std::vector<std::vector<int>>adj(n + 1);
-    for (int i = 2; i <= n; i += 1) {
-        int p;
-        fast_input >> p;
-        adj[p].push_back(i);
+    LazySegmentTree<Info, Tag>seg(2 * n);
+    for (int i = 1; i <= 2 * n; i += 1) {
+        seg.modify(i, {0, i});
+    }
+    for (int i = 1; i <= n; i += 1) {
+        seg.rangeApply(a[i] + i, a[i] + i, {1});
     }
 
-    std::vector<int>d(n + 1);
-    auto dfs = [&](auto && self, int u) ->void {
-        stk[a[u]].emplace_back(u);
-        if (!stk[a[u] + 1].empty()) {
-            f[u][0] = stk[a[u] + 1].back();
+    std::set<Node>odt;
+    for (int i = 1; i <= n; i += 1) {
+        odt.insert(Node(i, i, a[i]));
+    }
+
+    auto split = [&](int p) {
+        auto it = odt.lower_bound(Node(p, 0, 0));
+        if (it != odt.end() && it->l == p) {
+            return it;
         }
-        d[u] += 1;
-        for (int v : adj[u]) {
-            d[v] = d[u];
-            self(self, v);
-        }
-        stk[a[u]].pop_back();
+        --it;
+        int l = it->l, r = it->r, c = it->c;
+        odt.erase(it);
+        odt.insert(Node(l, p - 1, c));
+        return odt.insert(Node(p, r, c)).first;
     };
-    dfs(dfs, 1);
 
-    for (int k = 1; k < N; k += 1) {
-        for (int u = 1; u <= n; u += 1) {
-            f[u][k] = f[f[u][k - 1]][k - 1];
+    auto query = [&]() {
+        auto [v, p] = seg.info[1];
+        std::cout << p << ' ' << v << '\n';
+    };
+
+    query();
+    for (int i = 1; i <= m; i += 1) {
+        int l, r, d;
+        std::cin >> l >> r >> d;
+
+        auto itr = split(r + 1), itl = split(l);
+        for (; itl != itr; itl = odt.erase(itl)) {
+            seg.rangeApply(itl->c + itl->l, itl->c + itl->r, {-1});
         }
+        d -= l;
+        seg.rangeApply(d + l, d + r, {1});
+        odt.insert(Node(l, r, d));
+        query();
     }
+}
 
-    int q;
-    fast_input >> q;
-    while (q--) {
-        int s, t;
-        fast_input >> s >> t;
-        
-        int res = 0;
-        for (int k = N - 1; k >= 0; k -= 1) {
-            if (d[f[s][k]] >= d[t]) {
-                res |= 1 << k;
-                s = f[s][k];
-            }
-        }
-        res += 1;
-        fast_output << res << '\n';
+auto main() ->int {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+    int t;
+    std::cin >> t;
+    while (t--) {
+        solve();
     }
     return 0;
 }

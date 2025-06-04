@@ -1006,6 +1006,59 @@ for (int i = 1; i <= n; i += 1) {
 }
 ```
 
+## ODT
+
+```cpp
+struct Node {
+    int l, r;
+    mutable i64 v;
+    Node(int l = 0, int r = 0, i64 v = 0): l{l}, r{r}, v{v} {}
+    friend bool operator<(Node lsh, Node rsh) {
+        return lsh.l < rsh.l;
+    }
+};
+std::set<Node>odt;
+auto split(int p) {
+    auto it = odt.lower_bound(Node(p, 0, 0));
+    if (it != odt.end() && it->l == p) {
+        return it;
+    }
+    assert(it != odt.begin());
+    --it;
+    int l = it->l, r = it->r, v = it->v;
+    odt.erase(it);
+    odt.insert(Node(l, p - 1, v));
+    return odt.insert(Node(p, r, v)).first;
+}
+auto assign(int l, int r, int v) {
+    auto itr = split(r + 1), itl = split(l);
+    odt.erase(itl, itr);
+    odt.insert(Node(l, r, v));
+}
+
+auto add(int l, int r, int v) {
+    auto itr = split(r + 1), itl = split(l);
+    for (; itl != itr; ++itl) {
+        itl->v += v;
+    }
+}
+
+auto assign(int l, int r, int x) {
+    auto itr = split(r + 1), itl = split(l);
+    for (auto it = itl; it != itr; ++it) {
+        seg.rangeApply(it->l, it->r, {std::abs(x - it->c)});
+    }
+    odt.erase(itl, itr);
+    odt.insert(Node(l, r, x));
+}
+
+auto itr = split(r + 1), itl = split(l);
+for (; itl != itr; itl = odt.erase(itl)) {
+    rangeAdd(itl->l, itl->r, add[itl->c] - add[c]);
+}
+odt.insert(Node(l, r, c));
+```
+
 ## Merge
 
 ####遇到卡空间的情况，应该在merge完之后在add，否则垃圾节点回收就没有意义了
