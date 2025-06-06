@@ -4393,6 +4393,44 @@ while (cnt > 1) {
 }
 ```
 
+## Eulerian
+
+```cpp
+auto work(int n, auto & adj, auto & deg) {
+    std::vector<int>ans;
+    int cnt = 0;
+    for (int u = 1; u <= n; u += 1) {
+        if (deg[u] % 2 == 1) {
+            cnt += 1;
+        }
+    }
+    if (cnt > 2) {
+        return ans;
+    }
+    std::vector<int>vis(n + 1), cur(n + 1);
+    auto dfs = [&](auto && self, int u) ->void {
+        for (int& j = cur[u]; j < adj[u].size(); ++j) {
+            auto [v, i] = adj[u][j];
+            if (!vis[i]) {
+                vis[i] = 1;
+                self(self, v);
+                ans.push_back(i);
+            }
+        }
+    };
+    int r = 1;
+    for (int u = 1; u <= n; u += 1) {
+        if (deg[u] % 2 == 1) {
+            r = u;
+            break;
+        }
+    }
+    dfs(dfs, r);
+    // ans.size() 不一定等于 n
+    return ans;
+}
+```
+
 ## Kruskal重构树
 
 note：并查集不可以启发式合并。
