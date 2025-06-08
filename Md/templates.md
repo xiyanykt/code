@@ -591,7 +591,31 @@ struct LazySegmentTree {
 
 如何维护区间只有一个数在某个 bit 上为 0
 
-$\text{info:(s = inf ,h = 0)}$ , $c_h = (a_s \& b_h) | (a_h \& b_s)$ .
+$\text{info:(s = inf ,h = 0)}$ , $c_h = (a_s \& b_h) | (a_h \& b_s)$​ .
+
+```cpp
+struct Tag {
+    i64 a = 0;
+    i64 d = 0;
+    void apply(const Tag& t) {
+        a += t.a;
+        d += t.d;
+    }
+};
+struct Info {
+    i64 sum = 0;
+    int l = 0, r = 0;
+    void apply(const Tag& t) {
+        i64 x = t.a + t.d * l;
+        i64 y = t.a + t.d * r;
+        // 区间维护等差数列是可以做到的
+        sum += (x + y) * (r - l + 1) / 2;
+    }
+};
+Info operator+(const Info& a, const Info& b) {
+    return {a.sum + b.sum, std::min(a.l, b.l), std::max(a.r, b.r)};
+}
+```
 
 ## PresidentTree
 
